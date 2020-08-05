@@ -1,6 +1,7 @@
 *.iml
 .gradle
 /local.properties
+/.idea
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -12,3 +13,14 @@
 /captures
 .externalNativeBuild
 .cxx
+.idea/codeStyles/
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/gradle.xml
+.idea/jarRepositories.xml
+.idea/misc.xml
+.idea/runConfigurations.xml
+app/libs/
+app/src/main/java/ru/skillbranch/skillarticles/data/local/
+app/src/main/java/ru/skillbranch/skillarticles/data/remote/
+app/src/main/java/ru/skillbranch/skillarticles/ui/custom/behaviors/
