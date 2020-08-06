@@ -9,6 +9,6 @@
     <item android:id="@+id/action_search"
         android:title="@string/hint_search"
         android:icon="@android:drawable/ic_menu_search"
-        app:showAsAction="ifRoom|collapseActionView"
+        app:showAsAction="always|collapseActionView"
         app:actionViewClass="android.widget.SearchView" />
 </menu>

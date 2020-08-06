@@ -34,6 +34,7 @@ class RootActivity : AppCompatActivity() {
         setupToolbar()
         setupBottombar()
         setupSubmenu()
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         val vmFactory = ViewModelFactory("0")
         viewModel = ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
@@ -54,17 +55,8 @@ class RootActivity : AppCompatActivity() {
             isIconified = !viewModel.currentState.isSearch
             if (viewModel.currentState.isSearch)
                 setQuery(viewModel.currentState.searchQuery ?: "", false)
-//            logo?.visibility = if (isIconified) View.VISIBLE else View.GONE
 
             setOnCloseListener { true }
-//            setOnSearchClickListener {
-//                viewModel.handleSearchPanel(true)
-//                requestFocus()
-//            }
-//            setOnCloseListener {
-//                viewModel.handleSearchPanel(false)
-//                true
-//            }
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
                     viewModel.handleSearchQuery(query)
@@ -84,7 +76,6 @@ class RootActivity : AppCompatActivity() {
             setOnActionExpandListener(object: MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                     viewModel.handleSearchPanel(true)
-                    searchView?.requestFocus()
                     return true
                 }
 
@@ -145,6 +136,22 @@ class RootActivity : AppCompatActivity() {
 
     }
 
+        private fun setupToolbar() {
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        logo = if (toolbar.childCount > 2) toolbar.getChildAt(2) as ImageView else null
+        logo?.let { logo ->
+            logo.scaleType = ImageView.ScaleType.CENTER_CROP
+            val lp = logo.layoutParams as? Toolbar.LayoutParams
+            lp?.let {
+                it.width = this.dpToIntPx(40)
+                it.height = this.dpToIntPx(40)
+                it.marginEnd = this.dpToIntPx(16)
+                logo.layoutParams = it
+            }
+        }
+    }
+
     private fun renderUi(data: ArticleState) {
         btn_settings.isChecked = data.isShowMenu
         if (data.isShowMenu)
@@ -188,19 +195,4 @@ class RootActivity : AppCompatActivity() {
             toolbar.logo = getDrawable(data.categoryIcon as Int)
     }
 
-    private fun setupToolbar() {
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        logo = if (toolbar.childCount > 2) toolbar.getChildAt(2) as ImageView else null
-        logo?.let { logo ->
-            logo.scaleType = ImageView.ScaleType.CENTER_CROP
-            val lp = logo.layoutParams as? Toolbar.LayoutParams
-            lp?.let {
-                it.width = this.dpToIntPx(40)
-                it.height = this.dpToIntPx(40)
-                it.marginEnd = this.dpToIntPx(16)
-                logo.layoutParams = it
-            }
-        }
-    }
 }
