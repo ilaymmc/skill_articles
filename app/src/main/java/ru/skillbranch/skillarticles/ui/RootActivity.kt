@@ -1,13 +1,14 @@
 package ru.skillbranch.skillarticles.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatDelegate
 import android.widget.SearchView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
@@ -54,11 +55,17 @@ class RootActivity : AppCompatActivity() {
         return super.onPrepareOptionsMenu(menu)
     }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+
         menuInflater.inflate(R.menu.menu_search, menu)
         val menuItem = menu.findItem(R.id.action_search)
+        if (viewModel.currentState.isSearch) {
+            menuItem.expandActionView()
+        }
+
         searchView = menuItem.actionView as SearchView
         searchView?.run {
             isIconifiedByDefault = !viewModel.currentState.isSearch
+            isIconified = !viewModel.currentState.isSearch
 
             if (viewModel.currentState.isSearch)
                 setQuery(viewModel.currentState.searchQuery ?: "", false)
@@ -76,8 +83,6 @@ class RootActivity : AppCompatActivity() {
                 }
             })
         }
-        if (viewModel.currentState.isSearch)
-            menuItem.expandActionView()
 
         menuItem?.run {
             setOnActionExpandListener(object: MenuItem.OnActionExpandListener {

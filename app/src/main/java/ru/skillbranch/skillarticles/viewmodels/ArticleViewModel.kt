@@ -84,7 +84,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
     fun handleLike() {
         val toggleLike = {
             val info = currentState.toArticlePersonalInfo()
-            repository.updateArticlePersinalInfo(info.copy(isLike = !info.isLike))
+            repository.updateArticlePersonalInfo(info.copy(isLike = !info.isLike))
         }
         toggleLike()
 
@@ -102,7 +102,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
 
     fun handleBookmark() {
         val info = currentState.toArticlePersonalInfo()
-        repository.updateArticlePersinalInfo(info.copy(
+        repository.updateArticlePersonalInfo(info.copy(
             isBookmark = !info.isBookmark
         ))
 
