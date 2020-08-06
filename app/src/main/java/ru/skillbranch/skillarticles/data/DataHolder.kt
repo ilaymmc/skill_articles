@@ -74,7 +74,7 @@ object NetworkDataHolder {
 
     fun loadArticleContent(articleId: String): LiveData<List<Any>?> {
         GlobalScope.launch {
-            if (isDelay) delay(1500)
+            if (isDelay) delay(2000)
             withContext(Dispatchers.Main){
                 content.value = listOf(longText)
             }

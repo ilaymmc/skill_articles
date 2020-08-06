@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
@@ -15,6 +16,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
     init {
         subscribeOnDataSource(getArticleData()) { article, state ->
             article ?: return@subscribeOnDataSource null
+            Log.d("ArticleViewModel", "getArticleData")
             state.copy(
                 shareLink = article.shareLink,
                 title = article.title,
@@ -28,6 +30,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
 
         subscribeOnDataSource(getArticleContent()) { content, state ->
             content ?: return@subscribeOnDataSource null
+            Log.d("ArticleViewModel", "getArticleContent")
             state.copy(
                 isLoadingContent = false,
                 content = content
@@ -36,6 +39,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
 
         subscribeOnDataSource(getArticlePersonalInfo()) { info, state ->
             info ?: return@subscribeOnDataSource null
+            Log.d("ArticleViewModel", "getArticlePersonalInfo")
             state.copy(
                 isBookmark = info.isBookmark,
                 isLike = info.isLike
@@ -43,6 +47,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
         }
 
         subscribeOnDataSource(repository.getAppSettings()) { settings, state ->
+            Log.d("ArticleViewModel", "getAppSettings")
             state.copy(
                 isDarkMode = settings.isDarkMode,
                 isBigText = settings.isBigText
@@ -116,14 +121,14 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
     }
 
     fun handleSearchQuery(query: String) {
-        if (state.value!!.isSearch && state.value!!.searchQuery != query)
+        if (currentState.isSearch && currentState.searchQuery != query)
             updateState {
                 it.copy(searchQuery = query)
             }
     }
 
     fun handleSearchPanel(open: Boolean) {
-        if (state.value!!.isSearch != open)
+        if (currentState.isSearch != open)
             updateState { it.copy(isSearch = open) }
     }
 

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatDelegate
 import android.widget.SearchView
@@ -47,12 +46,20 @@ class RootActivity : AppCompatActivity() {
         }
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        searchView = menu.findItem(R.id.action_search)?.actionView as? SearchView
+        searchView?.run {
+            isIconifiedByDefault = !viewModel.currentState.isSearch
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
         val menuItem = menu.findItem(R.id.action_search)
-        searchView = menu.findItem(R.id.action_search)?.actionView as? SearchView
+        searchView = menuItem.actionView as SearchView
         searchView?.run {
-            isIconified = !viewModel.currentState.isSearch
+            isIconifiedByDefault = !viewModel.currentState.isSearch
+
             if (viewModel.currentState.isSearch)
                 setQuery(viewModel.currentState.searchQuery ?: "", false)
 
