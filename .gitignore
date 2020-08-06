@@ -21,6 +21,3 @@
 .idea/misc.xml
 .idea/runConfigurations.xml
 app/libs/
-app/src/main/java/ru/skillbranch/skillarticles/data/local/
-app/src/main/java/ru/skillbranch/skillarticles/data/remote/
-app/src/main/java/ru/skillbranch/skillarticles/ui/custom/behaviors/
