@@ -8,7 +8,6 @@ import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.format
-import java.util.*
 
 class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleState>(ArticleState()) {
 

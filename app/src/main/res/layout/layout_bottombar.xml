@@ -2,9 +2,8 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
     tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
+
 
         <ru.skillbranch.skillarticles.ui.custom.CheckableImageView
             android:id="@+id/btn_like"
@@ -35,8 +34,7 @@
             app:layout_constraintStart_toEndOf="@+id/btn_bookmark"
             app:layout_constraintTop_toTopOf="parent"
             android:clickable="true"
-            android:focusable="true"
-            />
+            android:focusable="true"/>
 
         <ru.skillbranch.skillarticles.ui.custom.CheckableImageView
             android:id="@+id/btn_settings"
@@ -44,6 +42,5 @@
             android:src="@drawable/ic_format_size_black_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 </merge>
