@@ -6,7 +6,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
-import android.widget.SearchView
+//import android.widget.SearchView
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
@@ -21,6 +22,7 @@ import ru.skillbranch.skillarticles.viewmodels.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.Notify
 import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
+
 
 class RootActivity : AppCompatActivity() {
 
@@ -50,12 +52,15 @@ class RootActivity : AppCompatActivity() {
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         searchView = menu.findItem(R.id.action_search)?.actionView as? SearchView
         searchView?.run {
-            isIconifiedByDefault = !viewModel.currentState.isSearch
+//            isIconifiedByDefault = !viewModel.currentState.isSearch
         }
         return super.onPrepareOptionsMenu(menu)
     }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
 
+        // (((searchView?.getChildAt(0) as ViewGroup).getChildAt(2) as ViewGroup).getChildAt(1) as ViewGroup).getChildAt(0).id
+//        val searchId = 16909323
+//        val searchId = searchView?.resources?.getIdentifier("android:id/search_src_text", null, null) ?: 0
         menuInflater.inflate(R.menu.menu_search, menu)
         val menuItem = menu.findItem(R.id.action_search)
         if (viewModel.currentState.isSearch) {
@@ -64,7 +69,7 @@ class RootActivity : AppCompatActivity() {
 
         searchView = menuItem.actionView as SearchView
         searchView?.run {
-            isIconifiedByDefault = !viewModel.currentState.isSearch
+//            isIconifiedByDefault = !viewModel.currentState.isSearch
             isIconified = !viewModel.currentState.isSearch
 
             if (viewModel.currentState.isSearch)
@@ -88,16 +93,29 @@ class RootActivity : AppCompatActivity() {
             setOnActionExpandListener(object: MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                     viewModel.handleSearchPanel(true)
+                    val searchEdit =
+                        searchView?.findViewById<View>(R.id.search_src_text)
                     return true
                 }
 
                 override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
                     viewModel.handleSearchPanel(false)
+                    val searchEdit =
+                        searchView?.findViewById<View>(R.id.search_src_text)
                     return true
                 }
 
             })
         }
+//        val searchEdit =
+//            searchView?.findViewById<View>(R.id.search_src_text)
+//
+//        val searchEdit1 =
+//            searchView?.findViewById<View>(androidx.appcompat.R.id.search_src_text)
+//
+//        val searchEdit2 =
+//            searchView?.findViewById<View>(searchId)
+
         return super.onCreateOptionsMenu(menu)
     }
 
