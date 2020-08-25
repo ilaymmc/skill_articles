@@ -1,11 +1,13 @@
 package ru.skillbranch.skillarticles.ui
 
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
+import android.text.Spannable
+import android.text.SpannableString
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
 //import android.widget.SearchView
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
@@ -16,29 +18,39 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_submenu.*
+import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
+import ru.skillbranch.skillarticles.extensions.setMarignOptionaly
+import ru.skillbranch.skillarticles.ui.base.BaseActivity
+import ru.skillbranch.skillarticles.ui.custom.SearchSpan
 import ru.skillbranch.skillarticles.viewmodels.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
-import ru.skillbranch.skillarticles.viewmodels.Notify
-import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
+import ru.skillbranch.skillarticles.viewmodels.base.Notify
+import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
 
-class RootActivity : AppCompatActivity() {
+class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
-    private lateinit var viewModel: ArticleViewModel
-    private var searchView: SearchView? = null
+    override lateinit var viewModel: ArticleViewModel
     private var logo: ImageView? = null
+    private var searchQuery: String? = null
+    private var isSearching = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_root)
+    override val layout: Int = R.layout.activity_root
+
+    override fun setupViews() {
         setupToolbar()
         setupBottombar()
         setupSubmenu()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
-        val vmFactory = ViewModelFactory("0")
+        val vmFactory =
+            ViewModelFactory("0")
         viewModel = ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
         viewModel.observeState(this) {
             renderUi(it)
@@ -49,64 +61,49 @@ class RootActivity : AppCompatActivity() {
         }
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        searchView = menu.findItem(R.id.action_search)?.actionView as? SearchView
-        searchView?.run {
-//            isIconifiedByDefault = !viewModel.currentState.isSearch
-        }
-        return super.onPrepareOptionsMenu(menu)
-    }
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-
-        // (((searchView?.getChildAt(0) as ViewGroup).getChildAt(2) as ViewGroup).getChildAt(1) as ViewGroup).getChildAt(0).id
-//        val searchId = 16909323
-//        val searchId = searchView?.resources?.getIdentifier("android:id/search_src_text", null, null) ?: 0
+//    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+//        searchView = menu.findItem(R.id.action_search)?.actionView as? SearchView
+//        searchView?.run {
+////            isIconifiedByDefault = !viewModel.currentState.isSearch
+//        }
+//        return super.onPrepareOptionsMenu(menu)
+//    }
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
-        val menuItem = menu.findItem(R.id.action_search)
-        if (viewModel.currentState.isSearch) {
-            menuItem.expandActionView()
-        }
+        val menuItem = menu?.findItem(R.id.action_search)
+        val searchView = menuItem?.actionView as? SearchView
+        searchView?.queryHint = getString(R.string.article_search_placeholder)
 
-        searchView = menuItem.actionView as SearchView
-        searchView?.run {
-//            isIconifiedByDefault = !viewModel.currentState.isSearch
-            isIconified = !viewModel.currentState.isSearch
-
-            if (viewModel.currentState.isSearch)
-                setQuery(viewModel.currentState.searchQuery ?: "", false)
-
-            setOnCloseListener { true }
-            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String): Boolean {
-                    viewModel.handleSearchQuery(query)
-                    return true
-                }
-
-                override fun onQueryTextChange(newText: String): Boolean {
-                    viewModel.handleSearchQuery(newText)
-                    return true
-                }
-            })
+        if (isSearching) {
+            menuItem?.expandActionView()
+            searchView?.setQuery(searchQuery, false)
+            searchView?.clearFocus()
         }
 
         menuItem?.run {
             setOnActionExpandListener(object: MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-                    viewModel.handleSearchPanel(true)
-                    val searchEdit =
-                        searchView?.findViewById<View>(R.id.search_src_text)
+                    viewModel.handleSearchModel(true)
                     return true
                 }
-
                 override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                    viewModel.handleSearchPanel(false)
-                    val searchEdit =
-                        searchView?.findViewById<View>(R.id.search_src_text)
+                    viewModel.handleSearchModel(false)
                     return true
                 }
 
             })
         }
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                viewModel.handleSearch(query)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                viewModel.handleSearch(newText)
+                return true
+            }
+        })
 //        val searchEdit =
 //            searchView?.findViewById<View>(R.id.search_src_text)
 //
@@ -121,8 +118,8 @@ class RootActivity : AppCompatActivity() {
 
     @Override
     override fun onBackPressed() {
-        searchView?.takeIf { it.isIconified } ?.onActionViewCollapsed()
-            ?: super.onBackPressed()
+//        searchView?.takeIf { it.isIconified } ?.onActionViewCollapsed()
+//            ?: super.onBackPressed()
     }
 
     private fun renderNotifiation(notify: Notify) {
@@ -164,9 +161,26 @@ class RootActivity : AppCompatActivity() {
         btn_share.setOnClickListener { viewModel.handleShare() }
         btn_settings.setOnClickListener { viewModel.handleToggleMenu() }
 
+        btn_result_up.setOnClickListener {
+            if (search_view.hasFocus())
+                search_view.clearFocus()
+            viewModel.handleUpResult()
+        }
+
+        btn_result_down.setOnClickListener {
+            if (search_view.hasFocus())
+                search_view.clearFocus()
+            viewModel.handleDownResult()
+        }
+
+        btn_search_close.setOnClickListener {
+            viewModel.handleSearchModel(false)
+            invalidateOptionsMenu()
+        }
+
     }
 
-        private fun setupToolbar() {
+    private fun setupToolbar() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         logo = if (toolbar.childCount > 2) toolbar.getChildAt(2) as ImageView else null
@@ -183,21 +197,30 @@ class RootActivity : AppCompatActivity() {
     }
 
     private fun renderUi(data: ArticleState) {
+
+        if (data.isSearch)
+            showSearchBar()
+        else
+            hideSearchBar()
+
+        if (data.searchResult.isNotEmpty())
+            renderSearchResult(data.searchResult)
+
         btn_settings.isChecked = data.isShowMenu
         if (data.isShowMenu)
             submenu.open()
         else
             submenu.close()
 
-        searchView?.apply {
-            Log.d("searchView?.apply", "isIconified: $isIconified, data.isSearch: ${data.isSearch}")
-            if (isIconified == data.isSearch) {
-                isIconified = !data.isSearch
-            }
-//            logo?.visibility = if (data.isSearch) View.GONE else View.VISIBLE
-            if (data.searchQuery != null && query.toString() != data.searchQuery)
-                setQuery(data.searchQuery, false)
-        }
+//        searchView?.apply {
+//            Log.d("searchView?.apply", "isIconified: $isIconified, data.isSearch: ${data.isSearch}")
+//            if (isIconified == data.isSearch) {
+//                isIconified = !data.isSearch
+//            }
+////            logo?.visibility = if (data.isSearch) View.GONE else View.VISIBLE
+//            if (data.searchQuery != null && query.toString() != data.searchQuery)
+//                setQuery(data.searchQuery, false)
+//        }
 
 
         btn_like.isChecked = data.isLike
@@ -217,12 +240,51 @@ class RootActivity : AppCompatActivity() {
             btn_text_down.isChecked = true
         }
 
-        tv_text_content.text = if (data.isLoadingContent) "loading" else data.content.first() as String
+        if (data.isLoadingContent) {
+            tv_text_content.text = "loading"
+        } else if (tv_text_content.text == "loading") {
+            val content = data.content.first() as String
+            tv_text_content.setText(content, TextView.BufferType.SPANNABLE)
+        }
 
         toolbar.title = data.title ?: "loading"
         toolbar.subtitle = data.category ?: "loading"
         if (data.categoryIcon != null)
             toolbar.logo = getDrawable(data.categoryIcon as Int)
+    }
+
+    override fun renderSearchResult(searchResult: List<Pair<Int, Int>>) {
+        val content = tv_text_content.text as Spannable
+
+        val bgColor = Color.RED
+        val fgColor = Color.WHITE
+
+        searchResult.forEach { (start, end) ->
+            content.setSpan(
+                SearchSpan(bgColor, fgColor),
+                start,
+                end,
+                SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+    }
+
+    override fun renderSearchPosition(searchPosition: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun clearSearchResult() {
+        TODO("Not yet implemented")
+    }
+
+    override fun showSearchBar() {
+        bottombar.setSearchState(true)
+        scroll.setMarignOptionaly(bottom = dpToIntPx(56))
+    }
+
+    override fun hideSearchBar() {
+        bottombar.setSearchState(false)
+        scroll.setMarignOptionaly(bottom = 0)
     }
 
 }

@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.viewmodels
 
+import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
@@ -8,6 +9,10 @@ import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.format
+import ru.skillbranch.skillarticles.extensions.indexesOf
+import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
+import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
 class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleState>(ArticleState()) {
 
@@ -119,18 +124,30 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
         updateState { it.copy(isShowMenu = !it.isShowMenu) }
     }
 
-    fun handleSearchQuery(query: String) {
-        if (currentState.isSearch && currentState.searchQuery != query)
+    fun handleSearch(query: String?) {
+        query ?: return
+        if (currentState.isSearch && currentState.searchQuery != query) {
+            val result = (currentState.content.firstOrNull() as? String).indexesOf(query)
+                .map { it to it + query.length }
+
             updateState {
-                it.copy(searchQuery = query)
+                it.copy(searchQuery = query, searchResult = result)
             }
+        }
     }
 
-    fun handleSearchPanel(open: Boolean) {
-        if (currentState.isSearch != open)
-            updateState { it.copy(isSearch = open) }
+    fun handleSearchModel(isSearch: Boolean) {
+        if (currentState.isSearch != isSearch)
+            updateState { it.copy(isSearch = isSearch) }
     }
 
+    fun handleUpResult() {
+        updateState { it.copy(searchPosition = it.searchPosition.dec()) }
+    }
+
+    fun handleDownResult() {
+        updateState { it.copy(searchPosition = it.searchPosition.inc()) }
+    }
 }
 
 data class ArticleState (
@@ -155,4 +172,12 @@ data class ArticleState (
     val poster: String? = null,
     val content: List<Any> = emptyList(),
     val reviews: List<Any> = emptyList()
-)
+) : IViewModelState {
+    override fun save(outState: Bundle) {
+        TODO("Not yet implemented")
+    }
+
+    override fun restore(savedState: Bundle): IViewModelState {
+        TODO("Not yet implemented")
+    }
+}
