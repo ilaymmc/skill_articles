@@ -2,6 +2,7 @@ package ru.skillbranch.skillarticles.viewmodels
 
 import android.os.Bundle
 import android.util.Log
+import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
@@ -130,15 +131,17 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
             val result = (currentState.content.firstOrNull() as? String).indexesOf(query)
                 .map { it to it + query.length }
 
+            val newPosition =
+                if (currentState.searchPosition >= result.size) 0 else currentState.searchPosition
+
             updateState {
-                it.copy(searchQuery = query, searchResult = result)
+                it.copy(searchQuery = query, searchResult = result, searchPosition = newPosition)
             }
         }
     }
 
     fun handleSearchModel(isSearch: Boolean) {
-        if (currentState.isSearch != isSearch)
-            updateState { it.copy(isSearch = isSearch) }
+        updateState { it.copy(isSearch = isSearch, isShowMenu = false, searchPosition = 0) }
     }
 
     fun handleUpResult() {
@@ -174,10 +177,22 @@ data class ArticleState (
     val reviews: List<Any> = emptyList()
 ) : IViewModelState {
     override fun save(outState: Bundle) {
-        TODO("Not yet implemented")
+        outState.putAll(
+            bundleOf(
+                "isSearch" to isSearch,
+                "searchPosition" to searchPosition,
+                "searchQuery" to searchQuery,
+                "searchResult" to searchResult
+            )
+        )
     }
 
     override fun restore(savedState: Bundle): IViewModelState {
-        TODO("Not yet implemented")
+        return copy(
+            isSearch = savedState["isSearch"] as Boolean,
+            searchQuery = savedState["searchQuery"] as? String,
+            searchPosition = savedState["searchPosition"] as Int,
+            searchResult = savedState["searchResult"] as List<Pair<Int, Int>>
+        )
     }
 }

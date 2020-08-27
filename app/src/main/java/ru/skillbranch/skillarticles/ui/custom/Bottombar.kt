@@ -45,7 +45,7 @@ class Bottombar @JvmOverloads constructor(
         super.onRestoreInstanceState(state)
         if (state is SavedState) {
             isSearchMode = state.ssIsSearchMode
-            reveal.isVisible = !isSearchMode
+            reveal.isVisible = isSearchMode
             group_bottom.isVisible = !isSearchMode
         }
     }
@@ -64,13 +64,14 @@ class Bottombar @JvmOverloads constructor(
 
     private fun animateHideSearchPanel() {
         group_bottom.isVisible = true
-        val endRadius = hypot(width.toFloat(), height / 2f)
+        val startRadius = hypot(width.toFloat(), height / 2f)
+        val endRadius = 0f
         val va = ViewAnimationUtils.createCircularReveal(
             reveal,
             width,
             height/2,
-            endRadius,
-            0f
+            startRadius,
+            endRadius
         )
         va.doOnEnd {
             reveal.isVisible = false
@@ -80,12 +81,13 @@ class Bottombar @JvmOverloads constructor(
 
     private fun animateShowSearchPanel() {
         reveal.isVisible = true
+        val startRadius = 0f
         val endRadius = hypot(width.toFloat(), height / 2f)
         val va = ViewAnimationUtils.createCircularReveal(
             reveal,
             width,
             height/2,
-            0f,
+            startRadius,
             endRadius
         )
         va.doOnEnd {
