@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
@@ -20,8 +21,9 @@ import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_submenu.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
-import ru.skillbranch.skillarticles.extensions.setMarignOptionaly
+import ru.skillbranch.skillarticles.extensions.setMarginOptionally
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.custom.SearchFocusSpan
@@ -42,16 +44,18 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         ArticleBinding()
     }
 
-    override val viewModel: ArticleViewModel by lazy {
-        val vmFactory = ViewModelFactory("0")
-        ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
-    }
+    override val viewModel: ArticleViewModel by lazy { _viewModel }
+    private val _viewModel: ArticleViewModel by provideViewModel("0")
+
     private var logo: ImageView? = null
+    private lateinit var prefManager: PrefManager
 
     override val layout: Int = R.layout.activity_root
 
-    private val searchSpanBgColor by AttrValue(R.attr.colorSecondary)
-    private val searchSpanFgColor by AttrValue(R.attr.colorOnSecondary)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val bgColor by AttrValue(R.attr.colorSecondary)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val fgColor by AttrValue(R.attr.colorOnSecondary)
 
     override fun setupViews() {
         setupToolbar()
@@ -61,7 +65,13 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        prefManager = PrefManager(applicationContext)
+        AppCompatDelegate.setDefaultNightMode(
+            if (prefManager.isDarkMode)
+                AppCompatDelegate.MODE_NIGHT_YES
+            else
+                AppCompatDelegate.MODE_NIGHT_NO
+        )
     }
 
 //    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
@@ -217,7 +227,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
         searchResult.forEach { (start, end) ->
             content.setSpan(
-                SearchSpan(searchSpanBgColor, searchSpanFgColor),
+                SearchSpan(bgColor, fgColor),
                 start,
                 end,
                 SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -242,7 +252,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             val end = content.getSpanEnd(result)
             Selection.setSelection(content, start, end)
             content.setSpan(
-                SearchFocusSpan(searchSpanBgColor, searchSpanFgColor),
+                SearchFocusSpan(bgColor, fgColor),
                 start,
                 end,
                 SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -261,14 +271,18 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override fun showSearchBar() {
         bottombar.setSearchState(true)
-        scroll.setMarignOptionaly(bottom = dpToIntPx(56))
+        scroll.setMarginOptionally(bottom = dpToIntPx(56))
     }
 
     override fun hideSearchBar() {
         bottombar.setSearchState(false)
-        scroll.setMarignOptionaly(bottom = 0)
+        scroll.setMarginOptionally(bottom = 0)
     }
 
+
+    //
+    // BINDINGS
+    //
     inner class ArticleBinding : Binding() {
         var isFocusedSearch: Boolean = false
         var searchQuery: String? = null
@@ -303,6 +317,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             switch_mode.isChecked = it
             delegate.localNightMode =
                 if (it) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+            prefManager.isDarkMode = it
         }
 
         private var isLoadingContent by ObserveProp(true)
@@ -358,7 +373,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             isLoadingContent = data.isLoadingContent
             isSearch = data.isSearch
             searchQuery = data.searchQuery
-            searchResults = data.searchResult
+            searchResults = data.searchResults
             searchPosition = data.searchPosition
         }
         override fun saveUi(outState: Bundle) {
@@ -366,10 +381,6 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         }
         override fun restoreUi(savedState: Bundle) {
             isFocusedSearch = savedState.getBoolean(::isFocusedSearch.name)
-//            if (isFocusedSearch)
-//                search_view.requestFocus()
         }
-
     }
-
 }

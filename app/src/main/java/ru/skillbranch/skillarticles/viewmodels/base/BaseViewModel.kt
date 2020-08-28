@@ -83,7 +83,7 @@ abstract class BaseViewModel<T : IViewModelState>(initState: T) : ViewModel() {
         }
     }
 
-    fun saveState(outState: Bundle) {
+    open fun saveState(outState: Bundle) {
         currentState.save(outState)
     }
 

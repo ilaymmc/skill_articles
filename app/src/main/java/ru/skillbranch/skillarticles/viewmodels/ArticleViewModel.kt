@@ -6,6 +6,7 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
+import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
@@ -60,6 +61,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
         }
 
     }
+
 
     private fun getArticleContent() : LiveData<List<Any>?> {
         return repository.loadArticleContent(articleId)
@@ -135,7 +137,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
                 if (currentState.searchPosition >= result.size) 0 else currentState.searchPosition
 
             updateState {
-                it.copy(searchQuery = query, searchResult = result, searchPosition = newPosition)
+                it.copy(searchQuery = query, searchResults = result, searchPosition = newPosition)
             }
         }
     }
@@ -151,6 +153,12 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
     fun handleDownResult() {
         updateState { it.copy(searchPosition = it.searchPosition.inc()) }
     }
+
+    override fun saveState(outState: Bundle) {
+        super.saveState(outState)
+
+    }
+
 }
 
 data class ArticleState (
@@ -164,7 +172,7 @@ data class ArticleState (
     val isDarkMode: Boolean = false,
     val isSearch: Boolean = false,
     val searchQuery: String? = null,
-    val searchResult: List<Pair<Int, Int>> = emptyList(),
+    val searchResults: List<Pair<Int, Int>> = emptyList(),
     val searchPosition: Int = 0,
     val shareLink: String? = null,
     val title: String? = null,
@@ -182,7 +190,7 @@ data class ArticleState (
                 "isSearch" to isSearch,
                 "searchPosition" to searchPosition,
                 "searchQuery" to searchQuery,
-                "searchResult" to searchResult
+                "searchResult" to searchResults
             )
         )
     }
@@ -192,7 +200,7 @@ data class ArticleState (
             isSearch = savedState["isSearch"] as Boolean,
             searchQuery = savedState["searchQuery"] as? String,
             searchPosition = savedState["searchPosition"] as Int,
-            searchResult = savedState["searchResult"] as List<Pair<Int, Int>>
+            searchResults = savedState["searchResult"] as List<Pair<Int, Int>>
         )
     }
 }
