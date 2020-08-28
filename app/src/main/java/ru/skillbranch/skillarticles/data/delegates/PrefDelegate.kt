@@ -34,6 +34,8 @@ class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManag
                     getFloat(property.name, defaultValue)
                 is Int ->
                     getInt(property.name, defaultValue)
+                is Long ->
+                    getLong(property.name, defaultValue)
                 else ->
                     throw IllegalArgumentException("Unsupported type of ${property.name}")
             } as T
@@ -51,6 +53,8 @@ class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManag
                     putFloat(property.name, value)
                 is Int ->
                     putInt(property.name, value)
+                is Long ->
+                    putLong(property.name, value)
                 else ->
                     throw IllegalArgumentException("Unsupported type of ${property.name}")
             } as T
