@@ -23,7 +23,7 @@ import kotlin.reflect.KProperty
 
 
 class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManager, T?> {
-    override fun getValue(thisRef: PrefManager, property: KProperty<*>): T {
+    override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
         with (thisRef.preferences) {
             return when(defaultValue) {
                 is Boolean ->

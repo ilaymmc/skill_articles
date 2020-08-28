@@ -48,7 +48,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
     private val _viewModel: ArticleViewModel by provideViewModel("0")
 
     private var logo: ImageView? = null
-    private lateinit var prefManager: PrefManager
+//    private lateinit var prefManager: PrefManager
 
     override val layout: Int = R.layout.activity_root
 
@@ -65,11 +65,11 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefManager = PrefManager(applicationContext)
+//        prefManager = PrefManager(applicationContext)
         AppCompatDelegate.setDefaultNightMode(
-            if (prefManager.isDarkMode)
-                AppCompatDelegate.MODE_NIGHT_YES
-            else
+//            if (prefManager.isDarkMode)
+//                AppCompatDelegate.MODE_NIGHT_YES
+//            else
                 AppCompatDelegate.MODE_NIGHT_NO
         )
     }
@@ -317,7 +317,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             switch_mode.isChecked = it
             delegate.localNightMode =
                 if (it) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
-            prefManager.isDarkMode = it
+//            prefManager.isDarkMode = it
         }
 
         private var isLoadingContent by ObserveProp(true)
