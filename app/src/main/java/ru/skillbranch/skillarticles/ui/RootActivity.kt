@@ -44,8 +44,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         ArticleBinding()
     }
 
-    override val viewModel: ArticleViewModel by lazy { _viewModel }
-    private val _viewModel: ArticleViewModel by provideViewModel("0")
+    override val viewModel: ArticleViewModel by provideViewModel("0")
 
     private var logo: ImageView? = null
 //    private lateinit var prefManager: PrefManager
@@ -181,20 +180,20 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             if (search_view.hasFocus()) {
                 search_view.clearFocus()
             }
-            viewModel.handleUpResult()
             if (!tv_text_content.hasFocus()) {
                 tv_text_content.requestFocus()
             }
+            viewModel.handleUpResult()
         }
 
         btn_result_down.setOnClickListener {
             if (search_view.hasFocus()) {
                 search_view.clearFocus()
             }
-            viewModel.handleDownResult()
             if (!tv_text_content.hasFocus()) {
                 tv_text_content.requestFocus()
             }
+            viewModel.handleDownResult()
         }
 
         btn_search_close.setOnClickListener {
@@ -234,7 +233,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             )
         }
 
-        renderSearchPosition(0)
+//        renderSearchPosition(0)
     }
 
     override fun renderSearchPosition(searchPosition: Int) {
@@ -368,7 +367,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             data.title?.let { title = it }
             data.category?.let { category = it }
             data.categoryIcon?.let { categoryIcon = it as Int }
-            data.content.takeIf { it.isNotEmpty() } ?.let { content = it.first() as String }
+            data.content?.let { content = it }
 
             isLoadingContent = data.isLoadingContent
             isSearch = data.isSearch

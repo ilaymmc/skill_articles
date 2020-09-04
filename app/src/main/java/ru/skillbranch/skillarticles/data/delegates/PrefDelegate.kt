@@ -22,43 +22,83 @@ import kotlin.reflect.KProperty
 //    Использовать PrefManager из androidx (import androidx.preference.PreferenceManager)
 
 
-class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManager, T?> {
-    override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
-        with (thisRef.preferences) {
-            return when(defaultValue) {
-                is Boolean ->
-                    getBoolean(property.name, defaultValue)
-                is String ->
-                    getString(property.name, defaultValue)
-                is Float ->
-                    getFloat(property.name, defaultValue)
-                is Int ->
-                    getInt(property.name, defaultValue)
-                is Long ->
-                    getLong(property.name, defaultValue)
-                else ->
-                    throw IllegalArgumentException("Unsupported type of ${property.name}")
-            } as T
-        }
-    }
+class PrefDelegate<T>(private val defaultValue: T) {
+    private var storedValue : T? = null
 
-    override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
-        thisRef.preferences.edit(commit = true) {
-            when(value) {
-                is Boolean ->
-                    putBoolean(property.name, value)
-                is String ->
-                    putString(property.name, value)
-                is Float ->
-                    putFloat(property.name, value)
-                is Int ->
-                    putInt(property.name, value)
-                is Long ->
-                    putLong(property.name, value)
-                else ->
-                    throw IllegalArgumentException("Unsupported type of ${property.name}")
-            } as T
+    operator fun provideDelegate(
+        thisRef: PrefManager,
+        property: KProperty<*>
+    ) : ReadWriteProperty<PrefManager, T>  {
+        val key = property.name
+        return object : ReadWriteProperty<PrefManager, T> {
+            override fun getValue(thisRef: PrefManager, property: KProperty<*>): T {
+                with(thisRef.preferences) {
+                    return when (defaultValue) {
+                        is Boolean -> getBoolean(key, defaultValue)
+                        is String -> getString(key, defaultValue)
+                        is Float -> getFloat(key, defaultValue)
+                        is Int -> getInt(key, defaultValue)
+                        is Long -> getLong(key, defaultValue)
+                        else ->
+                            error("Unsupported type of ${property.name}")
+                    } as T
+                }
+            }
+            override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T) {
+                thisRef.preferences.edit(commit = true) {
+                    when (value) {
+                        is Boolean ->
+                            putBoolean(key, value)
+                        is String ->
+                            putString(key, value)
+                        is Float ->
+                            putFloat(key, value)
+                        is Int ->
+                            putInt(key, value)
+                        is Long ->
+                            putLong(key, value)
+                        else ->
+                            throw IllegalArgumentException("Unsupported type of ${property.name}")
+                    } as T
+                }
+            }
         }
+
     }
 
 }
+
+//class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManager, T?> {
+//    override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
+//        with (thisRef.preferences) {
+//            return when(defaultValue) {
+//                is Boolean -> getBoolean(property.name, defaultValue)
+//                is String -> getString(property.name, defaultValue)
+//                is Float -> getFloat(property.name, defaultValue)
+//                is Int -> getInt(property.name, defaultValue)
+//                is Long -> getLong(property.name, defaultValue)
+//                else ->
+//                    error("Unsupported type of ${property.name}")
+//            } as T
+//        }
+//    }
+//
+//    override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
+//        thisRef.preferences.edit(commit = true) {
+//            when(value) {
+//                is Boolean ->
+//                    putBoolean(property.name, value)
+//                is String ->
+//                    putString(property.name, value)
+//                is Float ->
+//                    putFloat(property.name, value)
+//                is Int ->
+//                    putInt(property.name, value)
+//                is Long ->
+//                    putLong(property.name, value)
+//                else ->
+//                    throw IllegalArgumentException("Unsupported type of ${property.name}")
+//            } as T
+//        }
+//    }
+//}

@@ -4,7 +4,6 @@ import android.text.Spannable
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.text.getSpans
 import androidx.core.view.marginBottom
 import androidx.core.widget.NestedScrollView
@@ -14,8 +13,6 @@ import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.matcher.BoundedMatcher
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.jraska.livedata.TestObserver
-import com.jraska.livedata.test
 import org.hamcrest.CoreMatchers
 import org.hamcrest.Description
 import org.hamcrest.Matcher
@@ -23,17 +20,12 @@ import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import ru.skillbranch.skillarticles.data.*
-import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.extensions.indexesOf
 import ru.skillbranch.skillarticles.extensions.setMarginOptionally
 import ru.skillbranch.skillarticles.ui.RootActivity
 import ru.skillbranch.skillarticles.ui.custom.SearchFocusSpan
 import ru.skillbranch.skillarticles.ui.custom.SearchSpan
 import ru.skillbranch.skillarticles.viewmodels.ArticleState
-import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
-import ru.skillbranch.skillarticles.viewmodels.base.Notify
-import java.util.*
-import java.util.concurrent.TimeUnit
 
 /**
  * Instrumented test, which will execute on an Android device.

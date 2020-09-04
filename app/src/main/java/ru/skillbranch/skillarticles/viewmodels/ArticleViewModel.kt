@@ -6,7 +6,6 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
-import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
@@ -63,7 +62,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
     }
 
 
-    private fun getArticleContent() : LiveData<List<Any>?> {
+    private fun getArticleContent(): LiveData<String?> {
         return repository.loadArticleContent(articleId)
     }
 
@@ -130,14 +129,15 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
     fun handleSearch(query: String?) {
         query ?: return
         if (currentState.isSearch && currentState.searchQuery != query) {
-            val result = (currentState.content.firstOrNull() as? String).indexesOf(query)
+            val result = currentState.content.indexesOf(query)
                 .map { it to it + query.length }
 
             val newPosition =
                 if (currentState.searchPosition >= result.size) 0 else currentState.searchPosition
 
             updateState {
-                it.copy(searchQuery = query, searchResults = result, searchPosition = newPosition)
+//                it.copy(searchQuery = query, searchResults = result, searchPosition = newPosition)
+                it.copy(searchQuery = query, searchResults = result, searchPosition = 0)
             }
         }
     }
@@ -161,7 +161,7 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
 
 }
 
-data class ArticleState (
+data class ArticleState(
     val isAuth: Boolean = false,
     val isLoadingContent: Boolean = true,
     val isLoadingReview: Boolean = true,
@@ -181,7 +181,7 @@ data class ArticleState (
     val date: String? = null,
     val author: Any? = null,
     val poster: String? = null,
-    val content: List<Any> = emptyList(),
+    val content: String? = null,
     val reviews: List<Any> = emptyList()
 ) : IViewModelState {
     override fun save(outState: Bundle) {

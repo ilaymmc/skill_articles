@@ -13,12 +13,10 @@ import ru.skillbranch.skillarticles.data.delegates.PrefDelegate
 
 class PrefManager(context: Context) {
 
-    var isDarkMode: Boolean? by PrefDelegate(false)
+    var isDarkMode by PrefDelegate(false)
 
     val preferences : SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     fun clearAll() {
-        preferences.edit (commit = true) {
-            clear()
-        }
+        preferences.edit().clear().apply()
     }
 }
