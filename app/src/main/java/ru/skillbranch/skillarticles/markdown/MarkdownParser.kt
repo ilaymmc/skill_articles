@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.markdown
 
+import java.lang.annotation.ElementType
 import java.util.regex.Pattern
 
 object MarkdownParser {
@@ -150,21 +151,32 @@ object MarkdownParser {
                 }
                 // code
                 10 -> {
-
                     val lines = string.subSequence(startIndex.plus(3), endIndex.minus(3)).split(LINE_SEPARATOR)
                     val l = lines.size
-                    lines.mapIndexed { i, el ->
-                        val element = Element.BlockCode(el + if (i < l-1) LINE_SEPARATOR else "" )
-                        parents.add(element)
+                    if (l == 1) {
+                        parents.add(Element.BlockCode(Element.BlockCode.Type.SINGLE,lines[0]))
+                    } else {
+                        lines.mapIndexed { i, el ->
+                            val element =
+                                Element.BlockCode(
+                                    when(i) {
+                                        0 -> Element.BlockCode.Type.START
+                                        l-1 -> Element.BlockCode.Type.END
+                                        else -> Element.BlockCode.Type.MIDDLE
+                                    },
+                                    el + if (i < l - 1) LINE_SEPARATOR else ""
+                                )
+                            parents.add(element)
+                        }
                     }
                     lastStartIndex = endIndex
                 }
                 // numbered list
                 11 -> {
                     text = string.subSequence(startIndex, endIndex)
-                    val (number, title) = "^(\\d+?)\\. (.+)\$".toRegex().find(text)!!.destructured
+                    val (order, title) = "^(\\d+?)\\. (.+)\$".toRegex().find(text)!!.destructured
                     val subs = findElement(title)
-                    val element = Element.OrderedListItem(number.toInt(), title, subs)
+                    val element = Element.OrderedListItem(order, title, subs)
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
@@ -240,12 +252,20 @@ sealed class Element {
     ) : Element()
 
     data class BlockCode(
+        val type: Type,
         override val text: CharSequence,
         override val elements: List<Element> = emptyList()
-    ) : Element()
+    ) : Element() {
+        enum class Type {
+            SINGLE,
+            START,
+            MIDDLE,
+            END
+        }
+    }
 
     data class OrderedListItem(
-        val number: Int,
+        val order: String,
         override val text: CharSequence,
         override val elements: List<Element> = emptyList()
     ) : Element()

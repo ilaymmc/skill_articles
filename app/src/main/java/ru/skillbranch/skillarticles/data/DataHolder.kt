@@ -113,7 +113,7 @@ and combined emphasis together ~~two tildes for strike and __underscores for inn
 + Or use plus for list item and ~~double tildes~~ for strike
 
 1. First ordered list item 
-2. Second item 
+2. Second item with long text for multiline. Little bit more
 3. Third item.
 
 > Blockquotes are very handy in ~~email~~ to emulate reply text.

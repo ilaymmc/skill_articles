@@ -73,8 +73,6 @@ class InstrumentedTest2 {
         inOrder.verify(paint).color = defaultColor
     }
 
-    /*
-    @Ignore
     @Test
     fun draw_block_code() {
         //settings
@@ -159,8 +157,6 @@ class InstrumentedTest2 {
 
         inOrderStart.verify(paint).color = bgColor
 
-
-
         inOrderStart.verify(path).reset()
         inOrderStart.verify(path).addRoundRect(
             RectF(
@@ -243,7 +239,6 @@ class InstrumentedTest2 {
         )
         inOrderEnd.verify(canvas).drawPath(path, paint)
     }
-    */
 }
 
 
