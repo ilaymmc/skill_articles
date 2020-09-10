@@ -174,7 +174,7 @@ object MarkdownParser {
                 // numbered list
                 11 -> {
                     text = string.subSequence(startIndex, endIndex)
-                    val (order, title) = "^(\\d+?)\\. (.+)\$".toRegex().find(text)!!.destructured
+                    val (order, title) = "^(\\d+?\\.) (.+)\$".toRegex().find(text)!!.destructured
                     val subs = findElement(title)
                     val element = Element.OrderedListItem(order, title, subs)
                     parents.add(element)

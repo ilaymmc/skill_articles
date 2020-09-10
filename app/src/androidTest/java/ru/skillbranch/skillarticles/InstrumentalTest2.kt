@@ -28,7 +28,7 @@ class InstrumentedTest2 {
         //settings
         val color = Color.RED
         val gap = 24f
-        val order = "1"
+        val order = "1."
 
         //defaults
         val defaultColor = Color.GRAY
