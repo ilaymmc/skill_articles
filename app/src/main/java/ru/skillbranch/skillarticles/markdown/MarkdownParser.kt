@@ -15,7 +15,7 @@ object MarkdownParser {
     private const val RULE_GROUP = "(^[-_*]{3}$)"
     private const val INLINE_GROUP = "((?<!`)`[^`\\s].*?[^`\\s]?`(?!`))"
     private const val LINK_GROUP = "(\\[[^\\[\\]]*?]\\(.+?\\)|^\\[*?]\\(.*?\\))"
-    private const val CODE_GROUP = "((?<!\\`)\\`\\`\\`[^\\`\\s]\\S[^\\`]+\\`\\`\\`(?!\\`))"
+    private const val CODE_GROUP = "((?<!\\`)\\`\\`\\`[^\\`\\s]\\S[^\\`]+[^\\`\\s]\\`\\`\\`(?!\\`))"
     private const val ORDERED_LIST_GROUP = "(^\\d+?\\. .+\$)"
 
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP|$CODE_GROUP|$ORDERED_LIST_GROUP"
@@ -29,7 +29,8 @@ object MarkdownParser {
         return MarkdownText(elements)
     }
 
-    fun clear(string: String) : String? {
+    fun clear(string: String?) : String? {
+        string ?: return null
         val elements = findElement(string)
         return clearElements(elements)
     }

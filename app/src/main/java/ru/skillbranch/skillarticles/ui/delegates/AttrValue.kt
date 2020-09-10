@@ -20,5 +20,4 @@ class AttrValue(@AttrRes private val res: Int) : ReadOnlyProperty<Context, Int> 
         }
         return value!!
     }
-
 }
