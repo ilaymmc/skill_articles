@@ -77,7 +77,6 @@ data class ArticlePersonalInfo(
     val isBookmark: Boolean = false
 )
 
-
 data class AppSettings(
     val isDarkMode: Boolean = false,
     val isBigText: Boolean = false

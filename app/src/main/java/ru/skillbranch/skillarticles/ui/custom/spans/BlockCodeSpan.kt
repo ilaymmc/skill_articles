@@ -1,11 +1,11 @@
-package ru.skillbranch.skillarticles.markdown.spans
+package ru.skillbranch.skillarticles.ui.custom.spans
 
 import android.graphics.*
 import android.text.style.ReplacementSpan
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
 import androidx.annotation.VisibleForTesting
-import ru.skillbranch.skillarticles.markdown.Element
+import ru.skillbranch.skillarticles.data.repositories.Element
 
 
 class BlockCodeSpan(
@@ -94,23 +94,23 @@ class BlockCodeSpan(
         end: Int,
         fm: Paint.FontMetricsInt?
     ): Int {
-        paint.forText {
-            val measuredText = paint.measureText(text.toString(), start, end)
-//            measureWidth = (measuredText + 2 * padding).toInt()
+        if (fm != null) {
+            fm.ascent =
+                (paint.ascent() -
+                        if (type == Element.BlockCode.Type.SINGLE || type == Element.BlockCode.Type.START)
+                            2 * padding
+                        else
+                            0f
+                        ).toInt()
+            fm.descent = (paint.descent() +
+                    if (type == Element.BlockCode.Type.SINGLE || type == Element.BlockCode.Type.END)
+                        2 * padding
+                    else
+                        0f
+                    ).toInt()
+            fm.top = fm.ascent
+            fm.bottom = fm.descent
         }
-        fm?.ascent =
-            (paint.ascent() -
-                if (type == Element.BlockCode.Type.SINGLE || type == Element.BlockCode.Type.START)
-                    2 * padding
-                else
-                    0f
-             ).toInt()
-        fm?.descent = (paint.descent() +
-                if (type == Element.BlockCode.Type.SINGLE || type == Element.BlockCode.Type.END)
-                    2 * padding
-                else
-                    0f
-                ).toInt()
         return 0
     }
 

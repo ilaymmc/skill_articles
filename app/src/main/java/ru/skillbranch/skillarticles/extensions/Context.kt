@@ -26,7 +26,7 @@ fun Context.dpToIntPx(dp: Int): Int {
 
 fun Context.attrValue(res: Int): Int {
     val tv = TypedValue()
-    if (this.theme.resolveAttribute(res, tv, true)) {
+    if (theme.resolveAttribute(res, tv, true)) {
         return tv.data
     } else {
         throw Resources.NotFoundException("Resource with id: $res not found")

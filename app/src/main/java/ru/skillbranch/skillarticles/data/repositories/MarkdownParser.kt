@@ -1,6 +1,5 @@
-package ru.skillbranch.skillarticles.markdown
+package ru.skillbranch.skillarticles.data.repositories
 
-import java.lang.annotation.ElementType
 import java.util.regex.Pattern
 
 object MarkdownParser {
@@ -16,8 +15,9 @@ object MarkdownParser {
     private const val RULE_GROUP = "(^[-_*]{3}$)"
     private const val INLINE_GROUP = "((?<!`)`[^`\\s].*?[^`\\s]?`(?!`))"
     private const val LINK_GROUP = "(\\[[^\\[\\]]*?]\\(.+?\\)|^\\[*?]\\(.*?\\))"
-    private const val CODE_GROUP = "((?<!\\`)\\`\\`\\`[^\\`\\s]\\S[^\\`]+[^\\`\\s]\\`\\`\\`(?!\\`))"
-    private const val ORDERED_LIST_GROUP = "(^\\d+?\\. .+\$)"
+//    private const val CODE_GROUP = "((?<!`)```[^`\\s]\\S[^`]+[^`\\s]```(?!`))"
+    private const val CODE_GROUP = "(^```[^`\\s]\\S[^`]+[^`\\s]```$)"
+    private const val ORDERED_LIST_GROUP = "(^\\d+?\\.\\s.+?$)"
 
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP|$CODE_GROUP|$ORDERED_LIST_GROUP"
     private val elementsPattern by lazy {
@@ -53,7 +53,7 @@ object MarkdownParser {
             val endIndex = matcher.end()
 
             if (lastStartIndex < startIndex) {
-                parents.add(Element.Text(string.subSequence(lastStartIndex,startIndex)))
+                parents.add(Element.Text(string.subSequence(lastStartIndex, startIndex)))
             }
 
             var text: CharSequence
@@ -151,20 +151,20 @@ object MarkdownParser {
                 }
                 // code
                 10 -> {
-                    val lines = string.subSequence(startIndex.plus(3), endIndex.minus(3)).split(LINE_SEPARATOR)
+                    val lines = string.subSequence(startIndex.plus(3), endIndex.minus(3)).lines()
                     val l = lines.size
                     if (l == 1) {
-                        parents.add(Element.BlockCode(Element.BlockCode.Type.SINGLE,lines[0]))
+                        parents.add(Element.BlockCode(Element.BlockCode.Type.SINGLE, lines[0]))
                     } else {
                         lines.mapIndexed { i, el ->
                             val element =
                                 Element.BlockCode(
-                                    when(i) {
+                                    when (i) {
                                         0 -> Element.BlockCode.Type.START
-                                        l-1 -> Element.BlockCode.Type.END
+                                        lines.lastIndex -> Element.BlockCode.Type.END
                                         else -> Element.BlockCode.Type.MIDDLE
                                     },
-                                    el + if (i < l - 1) LINE_SEPARATOR else ""
+                                    el + if (i < lines.lastIndex) LINE_SEPARATOR else ""
                                 )
                             parents.add(element)
                         }
@@ -174,7 +174,7 @@ object MarkdownParser {
                 // numbered list
                 11 -> {
                     text = string.subSequence(startIndex, endIndex)
-                    val (order, title) = "^(\\d+?\\.) (.+)\$".toRegex().find(text)!!.destructured
+                    val (order, title) = "^(\\d+?\\.)\\s(.+)\$".toRegex().find(text)!!.destructured
                     val subs = findElement(title)
                     val element = Element.OrderedListItem(order, title, subs)
                     parents.add(element)
