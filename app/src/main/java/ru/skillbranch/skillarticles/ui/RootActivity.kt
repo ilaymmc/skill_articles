@@ -49,11 +49,6 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override val layout: Int = R.layout.activity_root
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    val bgColor by AttrValue(R.attr.colorSecondary)
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    val fgColor by AttrValue(R.attr.colorOnSecondary)
-
     override fun setupViews() {
         setupToolbar()
         setupBottombar()
@@ -224,7 +219,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
         searchResult.forEach { (start, end) ->
             content.setSpan(
-                SearchSpan(bgColor, fgColor),
+                SearchSpan(),
                 start,
                 end,
                 SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -249,7 +244,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             val end = content.getSpanEnd(result)
             Selection.setSelection(content, start, end)
             content.setSpan(
-                SearchFocusSpan(bgColor, fgColor),
+                SearchFocusSpan(),
                 start,
                 end,
                 SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE

@@ -72,13 +72,117 @@ class SearchBgHelper(
     }
 
     private lateinit var spans: Array<out SearchSpan>
+    private val singleLineRender: SingleLineRenderer by lazy {
+        SingleLineRenderer(
+            padding, drawable
+        )
+    }
+    private val multiLineRender: MultiLineRenderer by lazy {
+        MultiLineRenderer(
+            padding,
+            drawableLeft,
+            drawableMiddle,
+            drawableRight
+        )
+    }
+    private var spanStart = 0
+    private var spanEnd = 0
+    private var startLine = 0
+    private var endLine = 0
+    private var startOffset = 0
+    private var endOffset = 0
+    private lateinit var render: SearchBgRender
 
     fun draw(canvas: Canvas, text: Spanned, layout: Layout) {
         spans = text.getSpans()
         spans.forEach {
+            spanStart = text.getSpanStart(it)
+            spanEnd = text.getSpanEnd(it)
+            startLine = layout.getLineForOffset(spanStart)
+            endLine = layout.getLineForOffset(spanEnd)
 
+            startOffset = layout.getPrimaryHorizontal(spanStart).toInt()
+            endOffset = layout.getPrimaryHorizontal(spanEnd).toInt()
+
+            render = if (startLine == endLine) singleLineRender else multiLineRender
+            render.draw (
+                canvas, layout, startLine, endLine, startOffset, endOffset
+            )
         }
+    }
+}
 
+abstract class SearchBgRender(
+    val padding: Int
+) {
+    abstract fun draw(
+        canvas: Canvas,
+        layout: Layout,
+        startLine: Int,
+        endLine: Int,
+        startOffset: Int,
+        endOffset: Int,
+        topExtraPadding: Int = 0,
+        bottomExtraPadding: Int = 0
+    )
+
+    fun getLineTop(layout: Layout, line: Int) : Int {
+        return layout.getLineTop(line)
+    }
+    fun getLineBottom(layout: Layout, line: Int) : Int {
+        return layout.getLineBottom(line)
+    }
+}
+
+class SingleLineRenderer(
+    padding: Int,
+    val drawable: Drawable
+) : SearchBgRender(padding) {
+    private var lineTop: Int = 0
+    private var lineBottom: Int = 0
+
+    override fun draw(
+        canvas: Canvas,
+        layout: Layout,
+        startLine: Int,
+        endLine: Int,
+        startOffset: Int,
+        endOffset: Int,
+        topExtraPadding: Int,
+        bottomExtraPadding: Int
+    ) {
+        lineTop = getLineTop(layout, startLine)
+        lineBottom = getLineBottom(layout, endLine)
+        drawable.setBounds(startOffset, lineTop, endOffset, lineBottom)
+        drawable.draw(canvas)
+    }
+}
+
+class MultiLineRenderer(
+    padding: Int,
+    val drawableLeft: Drawable,
+    val drawableMiddle: Drawable,
+    val drawableRight: Drawable
+) : SearchBgRender(padding) {
+    private var lineTop: Int = 0
+    private var lineBottom: Int = 0
+
+    override fun draw(
+        canvas: Canvas,
+        layout: Layout,
+        startLine: Int,
+        endLine: Int,
+        startOffset: Int,
+        endOffset: Int,
+        topExtraPadding: Int,
+        bottomExtraPadding: Int
+    ) {
+
+        // TODO implement it
+        lineTop = getLineTop(layout, startLine)
+        lineBottom = getLineBottom(layout, endLine)
+//        drawable.setBounds(startOffset, lineTop, endOffset, lineBottom)
+//        drawable.draw(canvas)
     }
 
 }
