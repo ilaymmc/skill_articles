@@ -11,9 +11,7 @@ import android.text.Spanned
 import androidx.core.graphics.ColorUtils
 import androidx.core.text.getSpans
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.extensions.attrValue
-import ru.skillbranch.skillarticles.extensions.dpToIntPx
-import ru.skillbranch.skillarticles.extensions.dpToPx
+import ru.skillbranch.skillarticles.extensions.*
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
 
 class SearchBgHelper(
@@ -127,10 +125,10 @@ abstract class SearchBgRender(
     )
 
     fun getLineTop(layout: Layout, line: Int) : Int {
-        return layout.getLineTop(line)
+        return layout.getLineTopWithoutPadding(line)
     }
     fun getLineBottom(layout: Layout, line: Int) : Int {
-        return layout.getLineBottom(line)
+        return layout.getLineBottomWithoutPadding(line)
     }
 }
 
@@ -151,8 +149,8 @@ class SingleLineRenderer(
         topExtraPadding: Int,
         bottomExtraPadding: Int
     ) {
-        lineTop = getLineTop(layout, startLine)
-        lineBottom = getLineBottom(layout, endLine)
+        lineTop = getLineTop(layout, startLine) + topExtraPadding
+        lineBottom = getLineBottom(layout, endLine) - bottomExtraPadding
         drawable.setBounds(startOffset, lineTop, endOffset, lineBottom)
         drawable.draw(canvas)
     }
