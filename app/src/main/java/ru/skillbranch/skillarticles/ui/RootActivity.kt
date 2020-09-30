@@ -25,6 +25,7 @@ import ru.skillbranch.skillarticles.extensions.setMarginOptionally
 import ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownBuilder
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.base.Binding
+import ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownImageView
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchFocusSpan
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
 import ru.skillbranch.skillarticles.ui.delegates.AttrValue
@@ -53,6 +54,8 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         setupToolbar()
         setupBottombar()
         setupSubmenu()
+
+        scroll.addView(MarkdownImageView(this, 14f))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -173,9 +176,9 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             if (search_view.hasFocus()) {
                 search_view.clearFocus()
             }
-            if (!tv_text_content.hasFocus()) {
-                tv_text_content.requestFocus()
-            }
+//            if (!tv_text_content.hasFocus()) {
+//                tv_text_content.requestFocus()
+//            }
             viewModel.handleUpResult()
         }
 
@@ -183,9 +186,9 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             if (search_view.hasFocus()) {
                 search_view.clearFocus()
             }
-            if (!tv_text_content.hasFocus()) {
-                tv_text_content.requestFocus()
-            }
+//            if (!tv_text_content.hasFocus()) {
+//                tv_text_content.requestFocus()
+//            }
             viewModel.handleDownResult()
         }
 
@@ -213,6 +216,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
     }
 
     override fun renderSearchResult(searchResult: List<Pair<Int, Int>>) {
+        /*
         val content = tv_text_content.text as Spannable
 
         clearSearchResult()
@@ -225,11 +229,11 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
                 SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
             )
         }
-
-//        renderSearchPosition(0)
+         */
     }
 
     override fun renderSearchPosition(searchPosition: Int) {
+        /*
         val content = tv_text_content.text as Spannable
 
 
@@ -250,15 +254,18 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
                 SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
             )
         }
+         */
     }
 
     override fun clearSearchResult() {
+        /*
         val content = tv_text_content.text as Spannable
         Selection.removeSelection(content)
         content.getSpans<SearchSpan>()
             .forEach {
                 content.removeSpan(it)
             }
+         */
     }
 
     override fun showSearchBar() {
@@ -294,15 +301,15 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             toolbar.logo = getDrawable(it)
         }
         private var isBigText : Boolean by RenderProp(false) {
-            if (it) {
-                tv_text_content.textSize = 18f
-                btn_text_up.isChecked = true
-                btn_text_down.isChecked = false
-            } else {
-                tv_text_content.textSize = 14f
-                btn_text_up.isChecked = false
-                btn_text_down.isChecked = true
-            }
+//            if (it) {
+//                tv_text_content.textSize = 18f
+//                btn_text_up.isChecked = true
+//                btn_text_down.isChecked = false
+//            } else {
+//                tv_text_content.textSize = 14f
+//                btn_text_up.isChecked = false
+//                btn_text_down.isChecked = true
+//            }
         }
 
         private var isDarkMode : Boolean by RenderProp(value = false, needInit = false) {
@@ -322,16 +329,12 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         private var searchResults: List<Pair<Int, Int>> by ObserveProp(emptyList())
         private var searchPosition: Int by ObserveProp(0)
         private var content: String by ObserveProp("loading") {
-
-            MarkdownBuilder(this@RootActivity)
-                .markdownToSpan(it)
-                .let {
-                    tv_text_content.setText(it, TextView.BufferType.SPANNABLE)
-                }
-
-            tv_text_content.movementMethod = LinkMovementMethod.getInstance()
-//            tv_text_content.isFocusable = true
-//            tv_text_content.isFocusableInTouchMode = true
+//            MarkdownBuilder(this@RootActivity)
+//                .markdownToSpan(it)
+//                .let {
+//                    tv_text_content.setText(it, TextView.BufferType.SPANNABLE)
+//                }
+//            tv_text_content.movementMethod = LinkMovementMethod.getInstance()
         }
 
         override fun onFinishInflate() {

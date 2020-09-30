@@ -185,6 +185,7 @@ class MultiLineRenderer(
     private var lineTop: Int = 0
     private var lineBottom: Int = 0
     private var lineEndOffset: Int = 0
+    private var lineStartOffset: Int = 0
 
     override fun draw(
         canvas: Canvas,
@@ -196,11 +197,24 @@ class MultiLineRenderer(
         topExtraPadding: Int,
         bottomExtraPadding: Int
     ) {
+        lineStartOffset = (layout.getLineLeft(endLine) - padding).toInt()
 
         lineEndOffset = (layout.getLineRight(startLine) + padding).toInt()
-        lineTop = getLineTop(layout, startLine)
-        lineBottom = getLineBottom(layout, endLine)
+        lineTop = getLineTop(layout, startLine) + topExtraPadding
+        lineBottom = getLineBottom(layout, startLine)
         drawStart(canvas, startOffset - padding, lineTop, lineEndOffset, lineBottom)
+
+        for (line in startLine.inc() until endLine) {
+            lineTop = getLineTop(layout, line)
+            lineBottom = getLineBottom(layout, line)
+            drawMiddle(canvas, lineStartOffset, lineTop, lineEndOffset, lineBottom)
+        }
+
+        lineTop = getLineTop(layout, endLine)
+        lineBottom = getLineBottom(layout, endLine) - bottomExtraPadding
+        drawEnd(canvas, lineStartOffset, lineTop, endOffset + padding, lineBottom)
+
+
 //        drawable.setBounds(startOffset, lineTop, endOffset, lineBottom)
 //        drawable.draw(canvas)
     }
@@ -212,9 +226,30 @@ class MultiLineRenderer(
         end: Int,
         bottom: Int
     ) {
+        drawableLeft.setBounds(start, top, end, bottom)
+        drawableLeft.draw(canvas)
+    }
 
-        // 01:04:25
+    private fun drawEnd(
+        canvas: Canvas,
+        start: Int,
+        top: Int,
+        end: Int,
+        bottom: Int
+    ) {
+        drawableRight.setBounds(start, top, end, bottom)
+        drawableRight.draw(canvas)
+    }
 
+    private fun drawMiddle(
+        canvas: Canvas,
+        start: Int,
+        top: Int,
+        end: Int,
+        bottom: Int
+    ) {
+        drawableMiddle.setBounds(start, top, end, bottom)
+        drawableMiddle.draw(canvas)
     }
 
 }
