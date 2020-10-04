@@ -1,34 +1,24 @@
 package ru.skillbranch.skillarticles.ui
 
 import android.os.Bundle
-import android.text.Selection
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.method.LinkMovementMethod
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
-import android.widget.TextView
-import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
-import androidx.core.text.getSpans
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_submenu.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.setMarginOptionally
-import ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownBuilder
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownImageView
-import ru.skillbranch.skillarticles.ui.custom.spans.SearchFocusSpan
-import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
-import ru.skillbranch.skillarticles.ui.delegates.AttrValue
 import ru.skillbranch.skillarticles.ui.delegates.ObserveProp
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.ArticleState
@@ -54,8 +44,6 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         setupToolbar()
         setupBottombar()
         setupSubmenu()
-
-        scroll.addView(MarkdownImageView(this, 14f))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -328,13 +316,9 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         }
         private var searchResults: List<Pair<Int, Int>> by ObserveProp(emptyList())
         private var searchPosition: Int by ObserveProp(0)
-        private var content: String by ObserveProp("loading") {
-//            MarkdownBuilder(this@RootActivity)
-//                .markdownToSpan(it)
-//                .let {
-//                    tv_text_content.setText(it, TextView.BufferType.SPANNABLE)
-//                }
-//            tv_text_content.movementMethod = LinkMovementMethod.getInstance()
+        private var content: List<MarkdownElement> by ObserveProp(emptyList()) {
+            tv_text_content.isLoading = it.isEmpty()
+            tv_text_content.setContent(it)
         }
 
         override fun onFinishInflate() {
@@ -369,8 +353,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             data.title?.let { title = it }
             data.category?.let { category = it }
             data.categoryIcon?.let { categoryIcon = it as Int }
-            data.content?.let { content = it }
-
+            content = data.content
             isLoadingContent = data.isLoadingContent
             isSearch = data.isSearch
             searchQuery = data.searchQuery
@@ -385,3 +368,5 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         }
     }
 }
+
+// 01:51:20
