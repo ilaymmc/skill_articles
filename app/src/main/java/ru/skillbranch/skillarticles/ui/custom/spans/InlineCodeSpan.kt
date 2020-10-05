@@ -49,8 +49,9 @@ class InlineCodeSpan(
         bottom: Int,
         paint: Paint
     ) {
+        val b = y + paint.descent()
         paint.forBackground {
-            rect.set(x, top.toFloat(), x + measureWidth, bottom.toFloat())
+            rect.set(x, top.toFloat(), x + measureWidth, b)
             canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
         }
 

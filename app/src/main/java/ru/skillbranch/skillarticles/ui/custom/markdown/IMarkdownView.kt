@@ -19,13 +19,16 @@ interface IMarkdownView {
                 start - offset to end - offset
             }
 
-        offsetResult.forEach {(start, end) ->
-            spannableContent.setSpan(
-                SearchSpan(),
-                start,
-                end,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
+        try {
+            offsetResult.forEach { (start, end) ->
+                spannableContent.setSpan(
+                    SearchSpan(),
+                    start,
+                    end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+        } catch (e: Exception) {
         }
 
     }

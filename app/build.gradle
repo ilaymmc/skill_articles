@@ -22,7 +22,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
     compileOptions{
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -63,4 +62,7 @@ dependencies {
     //------- 5 lesson
     androidTestImplementation "org.mockito:mockito-core:2.28.2"
     androidTestImplementation 'com.linkedin.dexmaker:dexmaker-mockito:2.25.1'
+
+    // 6 lesson
+    androidTestImplementation 'com.github.tmurakami:dexopener:2.0.5'
 }
