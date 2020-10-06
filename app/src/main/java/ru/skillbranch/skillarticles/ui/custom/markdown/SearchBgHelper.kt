@@ -18,8 +18,15 @@ import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
 
 class SearchBgHelper(
     context: Context,
-    private val focusListener: (Int, Int) -> Unit
+    private val focusListener: ((Int, Int) -> Unit)? = null,
+    private val mockDrawable: Drawable? = null //for mock drawable
 ) {
+    constructor(context: Context, focusListener: ((Int, Int) -> Unit)) : this(
+        context,
+        focusListener,
+        null
+    )
+
     private val padding: Int = context.dpToIntPx(4)
     private val borderWidth: Int = context.dpToIntPx(1)
     private val radius: Float = context.dpToPx(8)
@@ -28,6 +35,7 @@ class SearchBgHelper(
     private val alphaColor: Int = ColorUtils.setAlphaComponent(secondaryColor, 160)
 
     val drawable: Drawable by lazy {
+        mockDrawable ?:
         GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = FloatArray(8).apply { fill(radius) }
@@ -105,7 +113,7 @@ class SearchBgHelper(
             endLine = layout.getLineForOffset(spanEnd)
 
             if (it is SearchFocusSpan) {
-                focusListener.invoke(layout.getLineTop(startLine), layout.getLineBottom(startLine))
+                focusListener?.invoke(layout.getLineTop(startLine), layout.getLineBottom(startLine))
             }
             topExtraPadding = 0
             bottomExtraPadding = 0

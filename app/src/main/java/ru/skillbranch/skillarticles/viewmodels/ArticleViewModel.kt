@@ -160,8 +160,8 @@ class ArticleViewModel(private val articleId: String) : BaseViewModel<ArticleSta
         updateState { it.copy(searchPosition = it.searchPosition.inc()) }
     }
 
-    override fun saveState(outState: Bundle) {
-        super.saveState(outState)
+    fun handleCopyCode() {
+        notify(Notify.TextMessage("Code copy to clipboard"))
 
     }
 

@@ -31,7 +31,7 @@ class MarkdownContentView @JvmOverloads constructor(
 
     }
     var isLoading: Boolean = true
-    val padding  = context.dpToIntPx(8)
+    private val padding  = context.dpToIntPx(8)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var usedHeight = paddingTop
@@ -99,11 +99,12 @@ class MarkdownContentView @JvmOverloads constructor(
                     addView(im)
                 }
                 is MarkdownElement.Scroll -> {
-//                    val im = MarkdownCodeView(
-//                        context,
-//                        textSize
-//                    )
-//                    addView(im)
+                    val im = MarkdownCodeView(
+                        context,
+                        textSize,
+                        it.code.text
+                    )
+                    addView(im)
                 }
             }
         }
@@ -146,13 +147,15 @@ class MarkdownContentView @JvmOverloads constructor(
     }
 
     fun clearSearchResult() {
-        children.forEach {view ->
+        children.forEach { view ->
             view as IMarkdownView
             view.clearSearchResult()
         }
     }
 
     fun setCopyListener(listener: (String) -> Unit) {
-        //TODO implement me
+        children.filterIsInstance<MarkdownCodeView>().forEach { view ->
+            view.copyListener = listener
+        }
     }
 }
