@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.Selection
 import android.text.Spannable
 import android.view.View
@@ -14,6 +16,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.VisibleForTesting
+import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.attrValue
@@ -221,4 +224,51 @@ class MarkdownCodeView private constructor(
         (background as GradientDrawable).color = ColorStateList.valueOf(bgColor)
         tv_codeView.setTextColor(ColorStateList.valueOf(textColor))
     }
+
+//    Реализуй сохранение состояния для MarkdownImageView, MarkdownCodeView при пересоздании активити
+//    или смерти процесса MarkdownImageView - должна сохранять состояние отображения
+//    alt описания (скрытое/показанное) MarkdownCodeView - должна сохранять состояние
+//    отображения светлой/темной темы при переключении пользователем (нажатие на iv_switch)
+
+    override fun onSaveInstanceState(): Parcelable? {
+        return SavedState(super.onSaveInstanceState()).apply {
+            isDark = this@MarkdownCodeView.isDark
+            isManual = this@MarkdownCodeView.isManual
+        }
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
+        if (state is SavedState) {
+            isManual = state.isManual
+            isDark = state.isDark
+            if (isManual) {
+                applyColors()
+            }
+        }
+    }
+
+    private class SavedState : BaseSavedState, Parcelable {
+        var isManual = false
+        var isDark = false
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        constructor(src: Parcel) : super(src) {
+            isDark = src.readInt() == 1
+            isManual = src.readInt() == 1
+        }
+        override fun describeContents(): Int = 0
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            super.writeToParcel(parcel, flags)
+            parcel.writeInt(if (isDark) 1 else 0 )
+            parcel.writeInt(if (isManual) 1 else 0 )
+        }
+        companion object CREATOR : Parcelable.Creator<SavedState> {
+            override fun createFromParcel(parcel: Parcel): SavedState = SavedState(parcel)
+            override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+        }
+
+    }
+
 }

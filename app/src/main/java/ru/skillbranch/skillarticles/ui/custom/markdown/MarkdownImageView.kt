@@ -3,6 +3,8 @@ package ru.skillbranch.skillarticles.ui.custom.markdown
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.Spannable
 import android.view.*
 import android.widget.ImageView
@@ -232,6 +234,37 @@ class MarkdownImageView private constructor(
             doOnEnd { tv_alt?.isVisible = false }
             start()
         }
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        return SavedState(super.onSaveInstanceState()).apply { altIsOpen = tv_alt?.isVisible == true }
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
+        if (state is SavedState) {
+            tv_alt?.isVisible = state.altIsOpen
+        }
+    }
+
+    private class SavedState : BaseSavedState, Parcelable {
+        var altIsOpen = false
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        constructor(src: Parcel) : super(src) {
+            altIsOpen = src.readInt() == 1
+        }
+        override fun describeContents(): Int = 0
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            super.writeToParcel(parcel, flags)
+            parcel.writeInt(if (altIsOpen) 1 else 0 )
+        }
+        companion object CREATOR : Parcelable.Creator<SavedState> {
+            override fun createFromParcel(parcel: Parcel): SavedState = SavedState(parcel)
+            override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+        }
+
     }
 }
 

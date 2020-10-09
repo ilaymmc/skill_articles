@@ -45,6 +45,7 @@ class SearchBgHelper(
     }
 
     val drawableMiddle: Drawable by lazy {
+        mockDrawable ?:
         GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             color = ColorStateList.valueOf(alphaColor)
@@ -53,6 +54,7 @@ class SearchBgHelper(
     }
 
     val drawableLeft: Drawable by lazy {
+        mockDrawable ?:
         GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = floatArrayOf(
@@ -66,6 +68,7 @@ class SearchBgHelper(
         }
     }
     val drawableRight: Drawable by lazy {
+        mockDrawable ?:
         GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = floatArrayOf(
@@ -126,12 +129,8 @@ class SearchBgHelper(
                     hs.bottomExtraPadding else 0
             }
 
-
             startOffset = layout.getPrimaryHorizontal(spanStart).toInt()
             endOffset = layout.getPrimaryHorizontal(spanEnd).toInt()
-
-
-
 
             render = if (startLine == endLine) singleLineRender else multiLineRender
             render.draw (

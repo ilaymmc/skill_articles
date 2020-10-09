@@ -1,7 +1,10 @@
 package ru.skillbranch.skillarticles.ui.custom.markdown
 
+import android.os.Parcelable
 import android.text.Spannable
+import android.view.View
 import androidx.core.text.getSpans
+import ru.skillbranch.skillarticles.ui.custom.ArticleSubmenu
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchFocusSpan
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
 

@@ -1,14 +1,16 @@
 package ru.skillbranch.skillarticles.ui.custom.markdown
 
 import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.SparseArray
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.children
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
-import ru.skillbranch.skillarticles.extensions.dpToIntPx
-import ru.skillbranch.skillarticles.extensions.groupByBounds
-import ru.skillbranch.skillarticles.extensions.setPaddingOptionally
+import ru.skillbranch.skillarticles.extensions.*
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import kotlin.properties.Delegates
 
@@ -39,12 +41,34 @@ class MarkdownContentView @JvmOverloads constructor(
         children.forEach {
             measureChild(it, widthMeasureSpec, heightMeasureSpec)
             usedHeight += it.measuredHeight
-
         }
         usedHeight += paddingBottom
         setMeasuredDimension(width, usedHeight)
     }
 
+    override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>) {
+        dispatchFreezeSelfOnly(container)
+    }
+
+    override fun dispatchRestoreInstanceState(container: SparseArray<Parcelable>) {
+        dispatchThawSelfOnly(container)
+    }
+
+
+    override fun onRestoreInstanceState(state: Parcelable) {
+        when (state) {
+            is SavedState -> {
+                super.onRestoreInstanceState(state.superState)
+                state.childrenStates?.let { restoreChildViewStates(it) }
+            }
+            else -> super.onRestoreInstanceState(state)
+        }
+    }
+    override fun onSaveInstanceState(): Parcelable? {
+        return SavedState(super.onSaveInstanceState()).apply {
+            childrenStates = saveChildViewStates()
+        }
+    }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         var usedHeight = paddingTop
@@ -74,6 +98,7 @@ class MarkdownContentView @JvmOverloads constructor(
 
     fun setContent(content: List<MarkdownElement>) {
         elements = content
+        var maxId = 1000
         content.forEach { it ->
             when(it) {
                 is MarkdownElement.Text -> {
@@ -86,6 +111,7 @@ class MarkdownContentView @JvmOverloads constructor(
                         .let { ss ->
                             tv.setText(ss, TextView.BufferType.SPANNABLE)
                         }
+                    tv.id = maxId++
                     addView(tv)
                 }
                 is MarkdownElement.Image -> {
@@ -96,15 +122,17 @@ class MarkdownContentView @JvmOverloads constructor(
                         it.image.text,
                         it.image.atl
                     )
+                    im.id = maxId++
                     addView(im)
                 }
                 is MarkdownElement.Scroll -> {
-                    val im = MarkdownCodeView(
+                    val cv = MarkdownCodeView(
                         context,
                         textSize,
                         it.code.text
                     )
-                    addView(im)
+                    cv.id = maxId++
+                    addView(cv)
                 }
             }
         }
@@ -156,6 +184,30 @@ class MarkdownContentView @JvmOverloads constructor(
     fun setCopyListener(listener: (String) -> Unit) {
         children.filterIsInstance<MarkdownCodeView>().forEach { view ->
             view.copyListener = listener
+        }
+    }
+
+    internal class SavedState : BaseSavedState {
+
+        var childrenStates: SparseArray<Parcelable>? = null
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        constructor(source: Parcel) : super(source) {
+            childrenStates = source.readSparseArray<Parcelable>(javaClass.classLoader)
+        }
+
+        override fun writeToParcel(out: Parcel, flags: Int) {
+            super.writeToParcel(out, flags)
+            out.writeSparseArray(childrenStates as SparseArray<Any>)
+        }
+
+        companion object {
+            @JvmField
+            val CREATOR = object : Parcelable.Creator<SavedState> {
+                override fun createFromParcel(source: Parcel) = SavedState(source)
+                override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+            }
         }
     }
 }
