@@ -7,10 +7,17 @@ import kotlin.reflect.KProperty
 
 abstract class Binding {
     val delegates = mutableMapOf<String, RenderProp<out Any>>()
-    abstract fun onFinishInflate()
+    var isInflate = false
+    open val afterInflate: (() -> Unit)? = null
+    open fun onFinishInflate() {
+        if (!isInflate) {
+            afterInflate?.invoke()
+            isInflate = true
+        }
+    }
     abstract fun bind(data:IViewModelState)
-    abstract fun saveUi(outState: Bundle)
-    abstract fun restoreUi(savedState: Bundle)
+    open fun saveUi(outState: Bundle) {}
+    open fun restoreUi(savedState: Bundle?) {}
 
     fun <A, B, C, D> dependsOn(
         vararg fields: KProperty<*>,
@@ -29,6 +36,12 @@ abstract class Binding {
                     delegates[names[3]]?.value as D
                 )
             }
+        }
+    }
+
+    fun rebind() {
+        delegates.forEach {
+            it.value.bind()
         }
     }
 }

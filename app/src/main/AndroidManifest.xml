@@ -15,7 +15,8 @@
         <activity
             android:name=".ui.RootActivity"
             android:windowSoftInputMode="adjustResize"
-            >
+            android:screenOrientation="unspecified"
+        >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

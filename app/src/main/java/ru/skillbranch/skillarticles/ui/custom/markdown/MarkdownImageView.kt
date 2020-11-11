@@ -67,6 +67,9 @@ class MarkdownImageView private constructor(
     @ColorInt
     private var lineColor: Int  = context.getColor(R.color.color_divider)
 
+    private var isOpen: Boolean = false
+    private var aspectRatio: Float = 0f
+
     //for draw object allocation
     private var linePositionY: Float = 0f
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -211,6 +214,7 @@ class MarkdownImageView private constructor(
 
     private fun animateShowAlt() {
         tv_alt?.isVisible = true
+        isOpen = true
         val endRadius = hypot(tv_alt?.width?.toFloat() ?: 0f, tv_alt?.height?.toFloat() ?: 0f)
         val va = ViewAnimationUtils.createCircularReveal(
             tv_alt,
@@ -231,34 +235,43 @@ class MarkdownImageView private constructor(
             endRadius,
             0f
         ).apply {
-            doOnEnd { tv_alt?.isVisible = false }
+            doOnEnd {
+                tv_alt?.isVisible = false
+                isOpen = false
+            }
             start()
         }
     }
 
     override fun onSaveInstanceState(): Parcelable? {
-        return SavedState(super.onSaveInstanceState()).apply { altIsOpen = tv_alt?.isVisible == true }
+        return SavedState(super.onSaveInstanceState()).apply {
+            ssIsOpen = isOpen //tv_alt?.isVisible == true
+            ssAspectRatio = iv_image.width.toFloat()/iv_image.height
+        }
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         super.onRestoreInstanceState(state)
         if (state is SavedState) {
-            tv_alt?.isVisible = state.altIsOpen
+            isOpen = state.ssIsOpen
+            tv_alt?.isVisible = isOpen
+            aspectRatio = state.ssAspectRatio
         }
     }
 
     private class SavedState : BaseSavedState, Parcelable {
-        var altIsOpen = false
+        var ssIsOpen: Boolean = false
+        var ssAspectRatio: Float = 0f
 
         constructor(superState: Parcelable?) : super(superState)
 
         constructor(src: Parcel) : super(src) {
-            altIsOpen = src.readInt() == 1
+            ssIsOpen = src.readInt() == 1
         }
         override fun describeContents(): Int = 0
         override fun writeToParcel(parcel: Parcel, flags: Int) {
             super.writeToParcel(parcel, flags)
-            parcel.writeInt(if (altIsOpen) 1 else 0 )
+            parcel.writeInt(if (ssIsOpen) 1 else 0 )
         }
         companion object CREATOR : Parcelable.Creator<SavedState> {
             override fun createFromParcel(parcel: Parcel): SavedState = SavedState(parcel)
