@@ -4,8 +4,12 @@ import android.os.Bundle
 import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
+import kotlinx.android.synthetic.main.layout_bottombar.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.viewmodels.RootViewModel
@@ -18,25 +22,36 @@ class RootActivity : BaseActivity<RootViewModel>() {
     override val viewModel: RootViewModel by viewModels()
 
     private var logo: ImageView? = null
-//    private lateinit var prefManager: PrefManager
 
     override val layout: Int = R.layout.activity_root
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        prefManager = PrefManager(applicationContext)
         AppCompatDelegate.setDefaultNightMode(
-//            if (prefManager.isDarkMode)
-//                AppCompatDelegate.MODE_NIGHT_YES
-//            else
-                AppCompatDelegate.MODE_NIGHT_NO
+            AppCompatDelegate.MODE_NIGHT_NO
         )
+
+        val appbarConfiguration = AppBarConfiguration(
+            setOf(
+                R.id.nav_articles,
+                R.id.nav_bookmarks,
+                R.id.nav_transcriptions,
+                R.id.nav_profile
+            )
+        )
+
+        setupActionBarWithNavController(navController, appbarConfiguration)
+        nav_view.setupWithNavController(navController)
     }
 
     override fun renderNotification(notify: Notify) {
-        val snackbar = Snackbar.make(coordinator_container, notify.message, Snackbar.LENGTH_LONG)
-//            .setAnchorView(bottombar)
+        val snackbar = Snackbar.make(container, notify.message, Snackbar.LENGTH_LONG)
+
+        if (bottombar != null)
+            snackbar.anchorView = bottombar
+        else
+            snackbar.anchorView = nav_view
 
         when(notify) {
             is Notify.TextMessage -> {}
@@ -61,11 +76,11 @@ class RootActivity : BaseActivity<RootViewModel>() {
 
     }
 
-    @Override
-    override fun onBackPressed() {
+//    @Override
+//    override fun onBackPressed() {
 //        searchView?.takeIf { it.isIconified } ?.onActionViewCollapsed()
 //            ?: super.onBackPressed()
-    }
+//    }
 
     override fun subscribeOnState(state: IViewModelState) {
         // Not yet implemented

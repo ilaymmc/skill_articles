@@ -15,6 +15,8 @@ import ru.skillbranch.skillarticles.extensions.dpToPx
 import ru.skillbranch.skillarticles.ui.custom.behaviors.SubmenuBehavior
 import kotlin.math.hypot
 
+// 01:45:20
+
 class ArticleSubmenu  @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -27,8 +29,8 @@ class ArticleSubmenu  @JvmOverloads constructor(
     private var centerY: Float = context.dpToPx(96)
 
     init {
-        View.inflate(context, R.layout.layout_submenu, this)
-        //
+        requestLayout()
+//        View.inflate(context, R.layout.layout_submenu, this)
 
         val materialBg = MaterialShapeDrawable.createWithElevationOverlay(context)
         materialBg.elevation = elevation

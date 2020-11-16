@@ -13,7 +13,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.children
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.*
-import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import kotlin.properties.Delegates
 
 class MarkdownContentView @JvmOverloads constructor(
@@ -69,15 +68,15 @@ class MarkdownContentView @JvmOverloads constructor(
 //                state.childrenStates?.let { restoreChildViewStates(it) }
             layoutManager = state.layout
         }
-        children.filter { it !is MarkdownTextView } .forEachIndexed { index, view ->  
-            layoutManager.attachToParent(view, index)
-        }
+//        children.filter { it !is MarkdownTextView } .forEachIndexed { index, view ->
+//            layoutManager.attachToParent(view, index)
+//        }
     }
 
     override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>) {
-        children.filter { it !is MarkdownTextView } .forEachIndexed { index, view ->
-            layoutManager.attachToParent(view, index)
-        }
+//        children.filter { it !is MarkdownTextView } .forEachIndexed { index, view ->
+//            layoutManager.attachToParent(view, index)
+//        }
         children.filter { it !is MarkdownTextView } .forEach {
             it.saveHierarchyState(layoutManager.container)
         }
@@ -114,6 +113,7 @@ class MarkdownContentView @JvmOverloads constructor(
     fun setContent(content: List<MarkdownElement>) {
         elements = content
         var maxId = 1000
+        var index = 1
         content.forEach { it ->
             when(it) {
                 is MarkdownElement.Text -> {
@@ -130,15 +130,16 @@ class MarkdownContentView @JvmOverloads constructor(
                     addView(tv)
                 }
                 is MarkdownElement.Image -> {
-                    val im = MarkdownImageView(
+                    val iv = MarkdownImageView(
                         context,
                         textSize,
                         it.image.url,
                         it.image.text,
                         it.image.atl
                     )
-                    im.id = maxId++
-                    addView(im)
+                    iv.id = maxId++
+                    addView(iv)
+                    layoutManager.attachToParent(iv, index++)
                 }
                 is MarkdownElement.Scroll -> {
                     val cv = MarkdownCodeView(
@@ -148,6 +149,7 @@ class MarkdownContentView @JvmOverloads constructor(
                     )
                     cv.id = maxId++
                     addView(cv)
+                    layoutManager.attachToParent(cv, index++)
                 }
             }
         }
@@ -248,7 +250,7 @@ class MarkdownContentView @JvmOverloads constructor(
                 view.id = ViewCompat.generateViewId()
                 ids.add(view.id)
             } else {
-                view.id = ids[index]
+                view.id = ids[index - 1]
                 view.restoreHierarchyState(container)
             }
         }
