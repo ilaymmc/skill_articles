@@ -82,7 +82,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/tv_access_code"
-        app:layout_constraintTop_toBottomOf="@+id/bt_login"/>
+        app:layout_constraintTop_toBottomOf="@+id/bt_login"
+        app:layout_constraintVertical_chainStyle="packed"
+        />
 
     <TextView
         android:id="@+id/tv_access_code"

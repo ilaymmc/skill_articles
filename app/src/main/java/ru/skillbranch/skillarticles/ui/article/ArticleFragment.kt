@@ -277,7 +277,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
                 ::searchResults,
                 ::searchPosition
             ) {
-                    ilc, iss, sr, sp ->
+                ilc, iss, sr, sp ->
                 if (!ilc) {
                     if (iss) {
                         tv_text_content.renderSearchResult(sr)

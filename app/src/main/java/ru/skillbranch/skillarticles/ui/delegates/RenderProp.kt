@@ -21,14 +21,14 @@ class RenderProp<T : Any>(
         thisRef: Binding,
         prop: KProperty<*>
     ) : ReadWriteProperty<Binding, T> {
-        val delegate = RenderProp(value, true, onChange)
+        val delegate = RenderProp(value, needInit, onChange)
         registerDelegate(thisRef, prop.name, delegate)
         return delegate
     }
 
-    override fun getValue(thisRef: Binding, property: KProperty<*>): T = value
+    override operator fun getValue(thisRef: Binding, property: KProperty<*>): T = value
 
-    override fun setValue(thisRef: Binding, property: KProperty<*>, newValue: T) {
+    override operator fun setValue(thisRef: Binding, property: KProperty<*>, newValue: T) {
         if (newValue != value) {
             value = newValue
             onChange?.invoke(value)
