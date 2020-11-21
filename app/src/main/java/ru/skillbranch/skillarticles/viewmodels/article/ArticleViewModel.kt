@@ -3,10 +3,13 @@ package ru.skillbranch.skillarticles.viewmodels.article
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.NavController
+import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
 import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
+import ru.skillbranch.skillarticles.data.repositories.RootRepository
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.format
@@ -14,6 +17,7 @@ import ru.skillbranch.skillarticles.extensions.indexesOf
 import ru.skillbranch.skillarticles.data.repositories.clearContent
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
 class ArticleViewModel(
@@ -21,6 +25,7 @@ class ArticleViewModel(
     private val articleId: String) : BaseViewModel<ArticleState>(handle, ArticleState()) {
 
     private val repository = ArticleRepository
+    private val rootRepository = RootRepository
     private var clearContent: String? = null
     init {
         subscribeOnDataSource(getArticleData()) { article, state ->
@@ -63,8 +68,11 @@ class ArticleViewModel(
             )
         }
 
-    }
+        subscribeOnDataSource(rootRepository.isAuth()) { isAuth, state ->
+            state.copy(isAuth = isAuth)
+        }
 
+    }
 
     private fun getArticleContent(): LiveData<List<MarkdownElement>?> {
         return repository.loadArticleContent(articleId)
@@ -162,6 +170,14 @@ class ArticleViewModel(
 
     fun handleCopyCode() {
         notify(Notify.TextMessage("Code copy to clipboard"))
+
+    }
+
+    fun handleSendComment() {
+        if (!currentState.isAuth)
+            navigate(NavigationCommand.StartLogin())
+//        else
+//            TODO
 
     }
 

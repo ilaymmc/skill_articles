@@ -24,12 +24,14 @@ interface IMarkdownView {
 
         try {
             offsetResult.forEach { (start, end) ->
-                spannableContent.setSpan(
-                    SearchSpan(),
-                    start,
-                    end,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
+                if (end > start) {
+                    spannableContent.setSpan(
+                        SearchSpan(),
+                        start,
+                        end,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
             }
         } catch (e: Exception) {
         }
@@ -40,15 +42,17 @@ interface IMarkdownView {
         searchPosition: Pair<Int, Int>,
         offset: Int
     ) {
-        spannableContent.getSpans<SearchFocusSpan>().forEach {
-            spannableContent.removeSpan(it)
+        if (searchPosition.second > searchPosition.first) {
+            spannableContent.getSpans<SearchFocusSpan>().forEach {
+                spannableContent.removeSpan(it)
+            }
+            spannableContent.setSpan(
+                SearchFocusSpan(),
+                searchPosition.first - offset,
+                searchPosition.second - offset,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
-        spannableContent.setSpan(
-            SearchFocusSpan(),
-            searchPosition.first - offset,
-            searchPosition.second - offset,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
     }
 
     fun clearSearchResult() {

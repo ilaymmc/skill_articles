@@ -2,6 +2,7 @@ package ru.skillbranch.skillarticles.ui.base
 
 import android.os.Bundle
 import android.view.*
+import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.activity_root.*
 import ru.skillbranch.skillarticles.ui.RootActivity
@@ -50,6 +51,10 @@ abstract class BaseFragment<T: BaseViewModel<out IViewModelState>> : Fragment() 
 
         viewModel.observeNotifications(viewLifecycleOwner) {
             root.renderNotification(it)
+        }
+
+        viewModel.observeNavigation(viewLifecycleOwner) {
+            root.viewModel.navigate(it)
         }
         setupViews()
     }

@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
@@ -23,6 +24,7 @@ import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
 abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatActivity() {
@@ -43,6 +45,7 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
 
         viewModel.observeState(this) { subscribeOnState(it) }
         viewModel.observeNotifications(this) { renderNotification(it) }
+        viewModel.observeNavigation(this) { subscribeOnNavigation(it) }
 
         navController = findNavController(R.id.nav_host_fragment)
     }
@@ -60,6 +63,42 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
+    private fun subscribeOnNavigation(command: NavigationCommand) {
+        when(command) {
+            is NavigationCommand.To -> {
+                navController.navigate(
+                    command.destination,
+                    command.args,
+                    command.options,
+                    command.extras
+                )
+            }
+            is NavigationCommand.FinishLogin -> {
+
+//                do {
+//                    val node = navController.graph.findNode(R.id.nav_auth)
+//                        ?: navController.graph.findNode(R.id.auth)
+//                    node?.let { navController.graph.remove(it) }
+//                } while (node != null)
+
+                navController.navigate(
+                    R.id.finish_login
+                )
+                command.privateDestination?.let {
+                    navController.navigate(it)
+                }
+            }
+            is NavigationCommand.StartLogin -> {
+                navController.navigate(
+                    R.id.start_login,
+                    bundleOf("private_destination" to (command.privateDestination ?: -1))
+                )
+            }
+
+        }
+    }
+
+
 //    internal inline fun <reified T : ViewModel> provideViewModel(arg : Any?) : ViewModelDelegate<T> {
 //        return ViewModelDelegate(T::class.java, arg)
 //    }
@@ -146,7 +185,6 @@ class ToolbarBuilder {
 
         }
     }
-
 }
 
 data class MenuItemHolder(

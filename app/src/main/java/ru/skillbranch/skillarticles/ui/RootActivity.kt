@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.navigation.NavDestination
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
@@ -14,17 +16,17 @@ import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.viewmodels.RootViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
 
 class RootActivity : BaseActivity<RootViewModel>() {
 
-    override val viewModel: RootViewModel by viewModels()
+    public override val viewModel: RootViewModel by viewModels()
 
     private var logo: ImageView? = null
 
     override val layout: Int = R.layout.activity_root
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,8 +44,21 @@ class RootActivity : BaseActivity<RootViewModel>() {
         )
 
         setupActionBarWithNavController(navController, appbarConfiguration)
-        nav_view.setupWithNavController(navController)
+//        nav_view.setupWithNavController(navController)
+        nav_view.setOnNavigationItemSelectedListener {
+            viewModel.navigate(NavigationCommand.To(it.itemId))
+            true
+        }
+
+        navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            if (destination.id == R.id.nav_auth) {
+                if (viewModel.currentState.isAuth)
+                    controller.popBackStack()
+            }
+            nav_view.selectDestination(destination)
+        }
     }
+
 
     override fun renderNotification(notify: Notify) {
         val snackbar = Snackbar.make(container, notify.message, Snackbar.LENGTH_LONG)
@@ -85,4 +100,26 @@ class RootActivity : BaseActivity<RootViewModel>() {
     override fun subscribeOnState(state: IViewModelState) {
         // Not yet implemented
     }
+
 }
+
+// Реализуй BottomNavigationView.selectDestination(destination: NavDestination)
+// для отображения текущего пункта меню BottomNavigationView соответствующему NavDestination.
+// Если destination является потомком destination top уровня
+// (@+id/nav_articles, @+id/nav_profile, @+id/nav_bookmarks, @+id/nav_transcriptions)
+// то соответствующий пункт меню в BottomNavigationView должен быть в состоянии selected
+private fun BottomNavigationView.selectDestination(destination: NavDestination) {
+    for (index in 0 until menu.size()) {
+        val navId = menu.getItem(index).itemId
+        var dest : NavDestination? = destination
+        while (dest != null) {
+            if (dest.id == navId) {
+                if (this.selectedItemId != navId)
+                    this.selectedItemId = navId
+                break
+            }
+            dest = dest.parent
+        }
+    }
+}
+

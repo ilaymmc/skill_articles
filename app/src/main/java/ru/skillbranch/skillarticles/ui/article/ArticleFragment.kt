@@ -78,6 +78,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         get() = root.submenu
 
     override fun setupViews() {
+        root.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         setupBottombar()
         setupSubmenu()
 
@@ -101,9 +102,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 
         et_comment.setOnEditorActionListener { v, _, _ ->
             root.hideKeyboard(v)
-//            viewModel.handleSendComment()
-            val action = AuthFragmentDirections.startLogin()
-            findNavController().navigate(action)
+            viewModel.handleSendComment()
             true
         }
     }
@@ -111,6 +110,11 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+    }
+
+    override fun onDestroyView() {
+        root.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        super.onDestroyView()
     }
 
     override fun showSearchBar() {
