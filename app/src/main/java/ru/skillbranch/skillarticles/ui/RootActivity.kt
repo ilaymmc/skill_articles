@@ -1,6 +1,8 @@
 package ru.skillbranch.skillarticles.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
@@ -14,6 +16,7 @@ import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
+import ru.skillbranch.skillarticles.viewmodels.RootState
 import ru.skillbranch.skillarticles.viewmodels.RootViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
@@ -25,9 +28,12 @@ class RootActivity : BaseActivity<RootViewModel>() {
     public override val viewModel: RootViewModel by viewModels()
 
     private var logo: ImageView? = null
+    private var inNavViewSelected = false
+    private var isAuth = false
 
     override val layout: Int = R.layout.activity_root
 
+    @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(
@@ -51,14 +57,14 @@ class RootActivity : BaseActivity<RootViewModel>() {
         }
 
         navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            Log.e("RootActivity", "addOnDestination: ${destination.displayName}(${destination.id})")
             if (destination.id == R.id.nav_auth) {
-                if (viewModel.currentState.isAuth)
+                if (isAuth)
                     controller.popBackStack()
             }
             nav_view.selectDestination(destination)
         }
     }
-
 
     override fun renderNotification(notify: Notify) {
         val snackbar = Snackbar.make(container, notify.message, Snackbar.LENGTH_LONG)
@@ -91,14 +97,9 @@ class RootActivity : BaseActivity<RootViewModel>() {
 
     }
 
-//    @Override
-//    override fun onBackPressed() {
-//        searchView?.takeIf { it.isIconified } ?.onActionViewCollapsed()
-//            ?: super.onBackPressed()
-//    }
-
     override fun subscribeOnState(state: IViewModelState) {
-        // Not yet implemented
+        if (state is RootState)
+            isAuth = state.isAuth
     }
 
 }
@@ -109,17 +110,15 @@ class RootActivity : BaseActivity<RootViewModel>() {
 // (@+id/nav_articles, @+id/nav_profile, @+id/nav_bookmarks, @+id/nav_transcriptions)
 // то соответствующий пункт меню в BottomNavigationView должен быть в состоянии selected
 private fun BottomNavigationView.selectDestination(destination: NavDestination) {
-    for (index in 0 until menu.size()) {
-        val navId = menu.getItem(index).itemId
-        var dest : NavDestination? = destination
-        while (dest != null) {
-            if (dest.id == navId) {
-                if (this.selectedItemId != navId)
-                    this.selectedItemId = navId
-                break
-            }
-            dest = dest.parent
+    var dest : NavDestination? = destination
+    while (dest != null) {
+        val item = menu.findItem(destination.id)
+        item?.let {
+            if (!item.isChecked)
+                item.isChecked = true
+            return@selectDestination
         }
+        dest = dest.parent
     }
 }
 
