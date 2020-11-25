@@ -57,7 +57,7 @@ class RootActivity : BaseActivity<RootViewModel>() {
         }
 
         navController.addOnDestinationChangedListener { controller, destination, arguments ->
-            Log.e("RootActivity", "addOnDestination: ${destination.displayName}(${destination.id})")
+//            Log.e("RootActivity", "addOnDestination: ${destination.id}")
             if (destination.id == R.id.nav_auth) {
                 if (isAuth)
                     controller.popBackStack()
