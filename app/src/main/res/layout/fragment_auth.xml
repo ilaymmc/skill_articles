@@ -49,7 +49,7 @@
         app:layout_constraintTop_toBottomOf="@id/wrap_login"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bt_login">
+        app:layout_constraintBottom_toTopOf="@id/btn_login">
 
         <EditText
             android:id="@+id/et_password"
@@ -60,7 +60,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
-        android:id="@+id/bt_login"
+        android:id="@+id/btn_login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="56dp"
@@ -82,7 +82,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/tv_access_code"
-        app:layout_constraintTop_toBottomOf="@+id/bt_login"
+        app:layout_constraintTop_toBottomOf="@+id/btn_login"
         app:layout_constraintVertical_chainStyle="packed"
         />
 

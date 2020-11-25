@@ -36,7 +36,7 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
             viewModel.navigate(NavigationCommand.To(R.id.page_privacy_policy))
         }
 
-        bt_login.setOnClickListener {
+        btn_login.setOnClickListener {
             viewModel.handleLogin(
                 et_login.text.toString(),
                 et_password.text.toString(),
