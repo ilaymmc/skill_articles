@@ -1,30 +1,19 @@
 package ru.skillbranch.skillarticles.ui.custom
 
-import android.R.attr.factor
-import android.R.attr.textStyle
 import android.content.Context
-import android.graphics.Outline
 import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewOutlineProvider
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
 import androidx.annotation.VisibleForTesting
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.graphics.ColorUtils
-import androidx.core.view.isVisible
-import androidx.core.view.marginStart
-import kotlinx.android.synthetic.main.item_article.view.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.ArticleItemData
-import ru.skillbranch.skillarticles.data.repositories.Element
 import ru.skillbranch.skillarticles.extensions.*
 import kotlin.math.*
-import java.time.format.TextStyle
-
 
 //Реализуй CustomViewGroup ArticleItemView содержащую метод bind(data : ArticleItemData) для связывания
 //данных и представлений в ArticleItemView. Разметка ArticleItemView должна соответствовать item_article.xml
@@ -47,6 +36,8 @@ class ArticleItemView constructor(
     private val mediumMargin: Int = context.dpToIntPx(16)
     @Px
     private val posterBottomMargin: Int = context.dpToIntPx(20)
+    @Px
+    private val titlePosterMargin: Int = context.dpToIntPx(24)
     @ColorInt
     private val colorGray: Int = context.getColor(R.color.color_gray)
     @ColorInt
@@ -184,7 +175,7 @@ class ArticleItemView constructor(
         }
 
         tv_title.measure(
-            MeasureSpec.makeMeasureSpec(widthBody - iv_poster.measuredWidth - context.dpToIntPx(24), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(widthBody - iv_poster.measuredWidth - titlePosterMargin, MeasureSpec.EXACTLY),
             heightMeasureSpec)
 
         val iconsHeight = max(iv_poster.measuredHeight + posterBottomMargin,
@@ -218,28 +209,7 @@ class ArticleItemView constructor(
                 MeasureSpec.makeMeasureSpec(layoutParams.height, MeasureSpec.EXACTLY)
             )
         }
-
         usedHeight += max(tv_likes_count.measuredHeight, iv_likes.measuredHeight)
-
-//        tvTitle.measure(msw, heightMeasureSpec)
-//        usedHeight += tvTitle.measuredHeight
-
-//        tv_description.measure(msw, heightMeasureSpec)
-//        usedHeight += tv_description.measuredHeight
-//
-//        tv_likes_count.measure(msw, heightMeasureSpec)
-//        usedHeight += tv_likes_count.measuredHeight
-
-//        iv_image.measure(msw, heightMeasureSpec)
-//        tv_title.measure(msw, heightMeasureSpec)
-////        measureChild(tv_title, widthMeasureSpec, heightMeasureSpec)
-//        if (tv_alt != null)
-//            tv_alt?.measure(msw, heightMeasureSpec)
-//
-//        usedHeight += iv_image.measuredHeight
-//        usedHeight += titleTopMargin
-//        linePositionY = usedHeight + tv_title.measuredHeight / 2f
-//        usedHeight += tv_title.measuredHeight
 
         usedHeight += mediumMargin
         setMeasuredDimension(width, usedHeight)
@@ -297,7 +267,7 @@ class ArticleItemView constructor(
         tv_title.layout(
             left,
             titleTop,
-            right  - iv_poster.measuredWidth - context.dpToIntPx(24),
+            right  - iv_poster.measuredWidth - titlePosterMargin,
             titleTop + tv_title.measuredHeight
         )
         usedHeight = max(iv_category.bottom, tv_title.bottom + smallMargin)
