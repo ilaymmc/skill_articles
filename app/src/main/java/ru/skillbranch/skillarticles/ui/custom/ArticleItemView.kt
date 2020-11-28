@@ -51,25 +51,10 @@ class ArticleItemView constructor(
     private val colorGray: Int = context.getColor(R.color.color_gray)
     @ColorInt
     private val colorPrimary: Int = context.attrValue(R.attr.colorPrimary)
-    @ColorInt
-    private val colorSurface: Int = context.attrValue(R.attr.colorSurface)
-    @ColorInt
-    private val colorOnSurface: Int  = context.attrValue(R.attr.colorOnSurface)
-    @ColorInt
-    private val colorOnBackground: Int  = context.attrValue(R.attr.colorOnBackground)
 
     private val posterSize = context.dpToIntPx(64)
     private val categorySize = context.dpToIntPx(40)
     private val iconSize = context.dpToIntPx(16)
-
-//    android:id="@+id/tv_date"
-//    app:layout_constraintStart_toStartOf="parent"
-//    app:layout_constraintTop_toTopOf="parent"
-
-//    android:id="@+id/tv_author"
-//    app:layout_constraintEnd_toEndOf="parent"
-//    app:layout_constraintStart_toEndOf="@+id/tv_date"
-//    app:layout_constraintTop_toTopOf="parent"
 
     private val tv_date: TextView
     private val tv_author: TextView
@@ -103,7 +88,7 @@ class ArticleItemView constructor(
 
         tv_author = TextView(context).apply {
             id = R.id.tv_author
-            setTextColor(colorGray)
+            setTextColor(colorPrimary)
             textSize = 12f
         }.also { addView(it) }
 
@@ -124,7 +109,7 @@ class ArticleItemView constructor(
 
         tv_description = TextView(context).apply {
             id = R.id.tv_description
-            setTextColor(colorGray)
+            compoundDrawables.forEach { it?.setTint(colorGray) }
             textSize = 14f
         }.also { addView(it) }
 
@@ -178,7 +163,7 @@ class ArticleItemView constructor(
 
         tv_date.measure(mswMax, heightMeasureSpec)
         tv_author.measure(
-            MeasureSpec.makeMeasureSpec(widthBody - tv_date.measuredWidth - smallMargin, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(widthBody - tv_date.measuredWidth - mediumMargin, MeasureSpec.EXACTLY),
             heightMeasureSpec)
         usedHeight += max(tv_date.measuredHeight, tv_author.measuredHeight)
 
@@ -209,6 +194,32 @@ class ArticleItemView constructor(
         usedHeight += smallMargin
         tv_description.measure(msw, heightMeasureSpec)
         usedHeight += tv_description.measuredHeight
+
+        usedHeight += smallMargin
+
+        tv_likes_count.measure(mswMax, heightMeasureSpec)
+        tv_comments_count.measure(mswMax, heightMeasureSpec)
+        tv_read_duration.measure(mswMax, heightMeasureSpec)
+        with(iv_likes) {
+            measure(
+                MeasureSpec.makeMeasureSpec(layoutParams.width, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(layoutParams.height, MeasureSpec.EXACTLY)
+            )
+        }
+        with(iv_comments) {
+            measure(
+                MeasureSpec.makeMeasureSpec(layoutParams.width, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(layoutParams.height, MeasureSpec.EXACTLY)
+            )
+        }
+        with(iv_bookmark) {
+            measure(
+                MeasureSpec.makeMeasureSpec(layoutParams.width, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(layoutParams.height, MeasureSpec.EXACTLY)
+            )
+        }
+
+        usedHeight += max(tv_likes_count.measuredHeight, iv_likes.measuredHeight)
 
 //        tvTitle.measure(msw, heightMeasureSpec)
 //        usedHeight += tvTitle.measuredHeight
@@ -249,7 +260,7 @@ class ArticleItemView constructor(
         )
 
         tv_author.layout(
-            left + tv_date.measuredWidth + smallMargin,
+            left + tv_date.measuredWidth + mediumMargin,
             usedHeight,
             right,
             usedHeight + tv_author.measuredHeight
@@ -300,21 +311,43 @@ class ArticleItemView constructor(
         )
         usedHeight += tv_description.measuredHeight
 
+        usedHeight += smallMargin
+        var curLeft = left
+        iv_likes.apply {
+            layout(curLeft, usedHeight,
+                curLeft + measuredWidth, usedHeight + measuredHeight)
+        }
+        curLeft += iv_likes.measuredWidth
+        curLeft += smallMargin
+        tv_likes_count.apply {
+            layout(curLeft, usedHeight,
+                curLeft + measuredWidth, usedHeight + measuredHeight)
+        }
+        curLeft += tv_likes_count.measuredWidth
+        curLeft += mediumMargin
+        iv_comments.apply {
+            layout(curLeft, usedHeight,
+                curLeft + measuredWidth, usedHeight + measuredHeight)
+        }
+        curLeft += iv_comments.measuredWidth
+        curLeft += smallMargin
+        tv_comments_count.apply {
+            layout(curLeft, usedHeight,
+                curLeft + measuredWidth, usedHeight + measuredHeight)
+        }
+        curLeft += tv_comments_count.measuredWidth
+        curLeft += mediumMargin
 
-//        tv_description.layout(
-//            left,
-//            usedHeight,
-//            right,
-//            usedHeight + tv_description.measuredHeight
-//        )
-//        usedHeight += tv_title.measuredHeight
-//
-//        iv_likes?.layout(
-//            left,
-//            usedHeight,
-//            left + iv_likes.measuredWidth,
-//            usedHeight + iv_likes.measuredHeight
-//        )
+        iv_bookmark.apply {
+            layout(right - measuredWidth, usedHeight,
+                right, usedHeight + measuredHeight)
+        }
+        val rightBorder = iv_bookmark.left - mediumMargin
+
+        tv_read_duration.apply {
+            layout(curLeft, usedHeight,
+                rightBorder, usedHeight + measuredHeight)
+        }
     }
 
     fun bind(data: ArticleItemData) {
