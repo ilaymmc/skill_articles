@@ -39,6 +39,8 @@ class ArticleItemView constructor(
     private val posterBottomMargin: Int = context.dpToIntPx(20)
     @Px
     private val titlePosterMargin: Int = context.dpToIntPx(24)
+    @Px
+    private val posterTopBottomMargin: Int = smallMargin // 0
     @ColorInt
     private val colorGray: Int = context.getColor(R.color.color_gray)
     @ColorInt
@@ -183,7 +185,7 @@ class ArticleItemView constructor(
                 max(iv_poster.measuredHeight + posterBottomMargin,
                     iv_poster.measuredHeight + iv_category.measuredHeight / 2) + smallMargin
 
-        usedHeight += max(tv_title.measuredHeight, iconsHeight)
+        usedHeight += max(posterTopBottomMargin + tv_title.measuredHeight + posterTopBottomMargin, iconsHeight)
 
         tv_description.measure(msw, heightMeasureSpec)
         usedHeight += tv_description.measuredHeight
@@ -248,7 +250,7 @@ class ArticleItemView constructor(
 
 
         val lineHeight = max(
-            tv_title.measuredHeight,
+            posterTopBottomMargin + tv_title.measuredHeight + posterTopBottomMargin,
             smallMargin + posterHeight
         )
 
@@ -270,12 +272,12 @@ class ArticleItemView constructor(
             catTop + iv_category.measuredHeight
         )
 
-        val titleTop = usedHeight + max((lineHeight - tv_title.measuredHeight) / 2, 0)
+        val titleTop = usedHeight + max((lineHeight - tv_title.measuredHeight - posterTopBottomMargin * 2) / 2, 0)
         tv_title.layout(
             left,
-            titleTop,
+            titleTop + posterTopBottomMargin,
             right - iv_poster.measuredWidth - titlePosterMargin,
-            titleTop + tv_title.measuredHeight
+            titleTop + posterTopBottomMargin + tv_title.measuredHeight
         )
         usedHeight = max(iv_category.bottom + smallMargin, tv_title.bottom )
 
