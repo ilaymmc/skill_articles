@@ -10,7 +10,6 @@ import androidx.annotation.ColorInt
 import androidx.annotation.Px
 import androidx.annotation.VisibleForTesting
 import androidx.constraintlayout.widget.ConstraintLayout
-import kotlinx.android.synthetic.main.item_article.view.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.ArticleItemData
 import ru.skillbranch.skillarticles.extensions.*
@@ -40,7 +39,7 @@ class ArticleItemView constructor(
     @Px
     private val titlePosterMargin: Int = context.dpToIntPx(24)
     @Px
-    private val posterTopBottomMargin: Int = smallMargin // 0
+    private val titleTopBottomMargin: Int = smallMargin // 0
     @ColorInt
     private val colorGray: Int = context.getColor(R.color.color_gray)
     @ColorInt
@@ -181,11 +180,9 @@ class ArticleItemView constructor(
             MeasureSpec.makeMeasureSpec(widthBody - iv_poster.measuredWidth - titlePosterMargin, MeasureSpec.EXACTLY),
             heightMeasureSpec)
 
-        val iconsHeight = smallMargin +
-                max(iv_poster.measuredHeight + posterBottomMargin,
-                    iv_poster.measuredHeight + iv_category.measuredHeight / 2) + smallMargin
+        val iconsHeight = smallMargin + iv_poster.measuredHeight + posterBottomMargin
 
-        usedHeight += max(posterTopBottomMargin + tv_title.measuredHeight + posterTopBottomMargin, iconsHeight)
+        usedHeight += max(titleTopBottomMargin + tv_title.measuredHeight + titleTopBottomMargin, iconsHeight + smallMargin)
 
         tv_description.measure(msw, heightMeasureSpec)
         usedHeight += tv_description.measuredHeight
@@ -243,18 +240,14 @@ class ArticleItemView constructor(
         usedHeight += max(tv_date.measuredHeight, tv_author.measuredHeight)
 //        usedHeight += smallMargin
 
-        val posterHeight = max(
-            iv_poster.measuredHeight + posterBottomMargin,
-            iv_poster.measuredHeight + iv_category.measuredHeight / 2
-        ) + smallMargin
-
+        val posterHeight = iv_poster.measuredHeight + posterBottomMargin
 
         val lineHeight = max(
-            posterTopBottomMargin + tv_title.measuredHeight + posterTopBottomMargin,
-            smallMargin + posterHeight
+            titleTopBottomMargin + tv_title.measuredHeight + titleTopBottomMargin,
+            smallMargin + posterHeight + smallMargin
         )
 
-        val poserTop =  usedHeight + lineHeight - posterHeight
+        val poserTop =  usedHeight + smallMargin + (lineHeight - smallMargin * 2 - posterHeight) / 2
 
         iv_poster.layout(
             right - iv_poster.measuredWidth,
@@ -272,15 +265,14 @@ class ArticleItemView constructor(
             catTop + iv_category.measuredHeight
         )
 
-        val titleTop = usedHeight + max((lineHeight - tv_title.measuredHeight - posterTopBottomMargin * 2) / 2, 0)
+        val titleTop = usedHeight + max((lineHeight - tv_title.measuredHeight - titleTopBottomMargin * 2) / 2, 0)
         tv_title.layout(
             left,
-            titleTop + posterTopBottomMargin,
+            titleTop + titleTopBottomMargin,
             right - iv_poster.measuredWidth - titlePosterMargin,
-            titleTop + posterTopBottomMargin + tv_title.measuredHeight
+            titleTop + titleTopBottomMargin + tv_title.measuredHeight
         )
-        usedHeight = max(iv_category.bottom + smallMargin, tv_title.bottom )
-
+        usedHeight = max(iv_category.bottom + smallMargin, tv_title.bottom + titleTopBottomMargin)
         tv_description.layout(
             left,
             usedHeight,
