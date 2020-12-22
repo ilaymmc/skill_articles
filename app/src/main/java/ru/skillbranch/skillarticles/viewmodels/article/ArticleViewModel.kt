@@ -1,32 +1,45 @@
 package ru.skillbranch.skillarticles.viewmodels.article
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.SavedStateHandle
-import androidx.navigation.NavController
-import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.data.ArticleData
-import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
-import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
-import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
-import ru.skillbranch.skillarticles.data.repositories.RootRepository
+import androidx.lifecycle.*
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import ru.skillbranch.skillarticles.data.models.ArticleData
+import ru.skillbranch.skillarticles.data.models.ArticlePersonalInfo
+import ru.skillbranch.skillarticles.data.models.CommentItemData
+import ru.skillbranch.skillarticles.data.repositories.*
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
-import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.extensions.indexesOf
-import ru.skillbranch.skillarticles.data.repositories.clearContent
+import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
+import java.util.concurrent.Executors
 
-class ArticleViewModel(
-    private val handle: SavedStateHandle,
-    private val articleId: String) : BaseViewModel<ArticleState>(handle, ArticleState()) {
+class ArticleViewModel(handle: SavedStateHandle, private val articleId: String):
+    BaseViewModel<ArticleState>(handle, ArticleState()) {
 
     private val repository = ArticleRepository
     private val rootRepository = RootRepository
     private var clearContent: String? = null
+
+    private val listConfig by lazy {
+        PagedList.Config.Builder()
+            .setEnablePlaceholders(true)
+            .setPageSize(5)
+            .build()
+    }
+
+    private val listData: LiveData<PagedList<CommentItemData>> = Transformations.switchMap(getArticleData()) {
+        buildPagedList(repository.allComments(articleId, it?.commentCount ?: 0))
+    }
+
+
     init {
         subscribeOnDataSource(getArticleData()) { article, state ->
             article ?: return@subscribeOnDataSource null
@@ -173,11 +186,44 @@ class ArticleViewModel(
 
     }
 
-    fun handleSendComment() {
+    fun handleSendComment(comment: String) {
         if (!currentState.isAuth)
             navigate(NavigationCommand.StartLogin())
-//        else
-//            TODO
+        viewModelScope.launch {
+            repository.sendComment(articleId, comment, currentState.answerToSlug)
+            withContext(Dispatchers.Main) {
+                updateState { it.copy( answerTo = null, answerToSlug = null) }
+            }
+        }
+
+    }
+
+    fun observeList(
+        owner: LifecycleOwner,
+        onChanged: (list: PagedList<CommentItemData>) -> Unit
+    ) {
+        listData.observe(owner, Observer { onChanged(it) })
+    }
+
+    private fun buildPagedList(
+        dataFactory: CommentsDataFactory
+    ): LiveData<PagedList<CommentItemData>> =
+        LivePagedListBuilder<String, CommentItemData> (
+                    dataFactory,
+                    listConfig)
+            .setFetchExecutor(Executors.newSingleThreadExecutor())
+            .build()
+
+    fun handleCommentFocus(hasFocus: Boolean) {
+        updateState { it.copy(showBottomBar = !hasFocus) }
+    }
+
+    fun handleClearComment() {
+        updateState { it.copy(answerTo = null, answerToSlug = null) }
+    }
+
+    fun handleReplyTo(slug: String, name: String) {
+        updateState { it.copy(answerToSlug = slug, answerTo = "Reply to $name") }
 
     }
 
@@ -204,9 +250,14 @@ data class ArticleState(
     val author: Any? = null,
     val poster: String? = null,
     internal val content: List<MarkdownElement> = emptyList(),
-    val reviews: List<Any> = emptyList()
+    val commentsCount: Int = 0,
+    val answerTo: String? = null,
+    val answerToSlug : String? = null,
+    val showBottomBar: Boolean = true
 ) : IViewModelState {
     override fun save(outState: SavedStateHandle) {
+        // TODO save state answers
+
         outState.set("isSearch", isSearch)
         outState.set("searchPosition", searchPosition)
         outState.set("searchQuery", searchQuery)
@@ -214,6 +265,7 @@ data class ArticleState(
     }
 
     override fun restore(savedState: SavedStateHandle): IViewModelState {
+        // TODO restore state answers
         return copy(
             isSearch = savedState["isSearch"] ?: false,
             searchQuery = savedState["searchQuery"],

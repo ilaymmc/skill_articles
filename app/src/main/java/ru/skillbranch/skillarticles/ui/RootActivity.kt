@@ -59,6 +59,7 @@ class RootActivity : BaseActivity<RootViewModel>() {
         navController.addOnDestinationChangedListener { controller, destination, arguments ->
 //            Log.e("RootActivity", "addOnDestination: ${destination.id}")
             if (destination.id == R.id.nav_auth) {
+//                nav_view.selectItem(arguments?.get("private_destination") as Int?)
                 if (isAuth) {
                     controller.popBackStack()
                     arguments?.get("private_destination")?.let {

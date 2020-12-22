@@ -8,37 +8,43 @@ import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_article.*
-import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_bottombar.view.*
-import kotlinx.android.synthetic.main.layout_submenu.*
 import kotlinx.android.synthetic.main.layout_submenu.view.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
-import ru.skillbranch.skillarticles.extensions.dpToIntPx
-import ru.skillbranch.skillarticles.extensions.format
-import ru.skillbranch.skillarticles.extensions.hideKeyboard
-import ru.skillbranch.skillarticles.extensions.setMarginOptionally
-import ru.skillbranch.skillarticles.ui.auth.AuthFragmentDirections
+import ru.skillbranch.skillarticles.extensions.*
 import ru.skillbranch.skillarticles.ui.base.*
+import ru.skillbranch.skillarticles.ui.custom.ArticleSubmenu
+import ru.skillbranch.skillarticles.ui.custom.Bottombar
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
-import ru.skillbranch.skillarticles.viewmodels.base.Notify
 import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
 class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     private val args : ArticleFragmentArgs by navArgs()
+
+    private val commentsAdapter by lazy {
+        CommentsAdapter {
+            Log.e("ArticleFragment", "click on comment: ${it.id} ${it.slug}")
+            viewModel.handleReplyTo(it.slug, it.user.name)
+            et_comment.requestFocus()
+            scroll.smoothScrollTo(0, et_comment.top)
+            et_comment.context.showKeyboard(et_comment)
+        }
+    }
 
     override val viewModel: ArticleViewModel by viewModels {
         ViewModelFactory(
@@ -73,9 +79,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     }
 
     private val bottombar
-        get() = root.bottombar
+        get() = root.findViewById<Bottombar>(R.id.bottombar)
     private val submenu
-        get() = root.submenu
+        get() = root.findViewById<ArticleSubmenu>(R.id.submenu)
 
     override fun setupViews() {
         root.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
@@ -100,11 +106,30 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         tv_author.text = args.author
         tv_date.text = args.date.format()
 
-        et_comment.setOnEditorActionListener { v, _, _ ->
-            root.hideKeyboard(v)
-            viewModel.handleSendComment()
+        et_comment.setOnEditorActionListener { view, _, _ ->
+            root.hideKeyboard(view)
+            viewModel.handleSendComment(view.text.toString())
+            view.text = null
+            view.clearFocus()
             true
         }
+
+        et_comment.setOnFocusChangeListener { v, hasFocus -> viewModel.handleCommentFocus(hasFocus) }
+
+        wrap_comments.setEndIconOnClickListener { view ->
+            view.context.hideKeyboard(view)
+            viewModel.handleClearComment()
+            et_comment.text = null
+            et_comment.clearFocus()
+
+        }
+
+        with(rv_comments) {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = commentsAdapter
+        }
+
+        viewModel.observeList(viewLifecycleOwner) { commentsAdapter.submitList(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?){
@@ -218,6 +243,13 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     inner class ArticleBinding : Binding() {
         var isFocusedSearch: Boolean = false
         var searchQuery: String? = null
+        private var answerTo: String by RenderProp("Comment") {
+            wrap_comments.hint = it
+        }
+        private var isShowBottombar: Boolean by RenderProp(true) {
+            if (it) bottombar.show() else bottombar.hide()
+            if (submenu.isOpen) submenu.isVisible = it
+        }
         private var isLike : Boolean by RenderProp(false) { bottombar.btn_like.isChecked = it }
         private var isBookmark : Boolean by RenderProp(false) { bottombar.btn_bookmark.isChecked = it }
         private var isShowMenu : Boolean by RenderProp(false) {
@@ -309,6 +341,8 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             searchQuery = data.searchQuery
             searchResults = data.searchResults
             searchPosition = data.searchPosition
+            answerTo = data.answerTo ?: "Comment"
+            isShowBottombar = data.showBottomBar
         }
         override fun saveUi(outState: Bundle) {
             outState.putBoolean(::isFocusedSearch.name, search_view?.hasFocus() ?: false)
