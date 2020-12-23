@@ -21,13 +21,13 @@ object ArticlesRepository {
     fun searchArticles(searchQuery: String): ArticlesDataFactory =
         ArticlesDataFactory(ArticlesStrategy.SearchArticles(::findArticleByTitle, searchQuery))
 
-//    fun bookmarkedArticles(): ArticlesDataFactory =
-//        ArticlesDataFactory(ArticlesStrategy.BookmarkedArticles(::findBookmarkedArticles))
-
     fun bookmarkedArticles(): ArticlesDataFactory =
-        ArticlesDataFactory(ArticlesStrategy.AllArticles(::findBookmarkedArticles))
+        ArticlesDataFactory(ArticlesStrategy.BookmarkArticles(::findBookmarkedArticles))
 
-    fun findBookmarkedArticles(start: Int, size: Int) =
+    fun searchBookmarkedArticles(searchQuery: String): ArticlesDataFactory =
+        ArticlesDataFactory(ArticlesStrategy.SearchBookmark(::findBookmarkedArticlesByTitle, searchQuery))
+
+    private fun findBookmarkedArticles(start: Int, size: Int) =
         local.localArticleItems
             .asSequence()
             .filter { it.isBookmark }
@@ -35,7 +35,15 @@ object ArticlesRepository {
             .take(size)
             .toList()
 
-    fun findArticleByTitle(start: Int, size: Int, searchTitle: String) =
+    private fun findBookmarkedArticlesByTitle(start: Int, size: Int, searchTitle: String) =
+        local.localArticleItems
+            .asSequence()
+            .filter { it.title.contains(searchTitle, true) && it.isBookmark }
+            .drop(start)
+            .take(size)
+            .toList()
+
+    private fun findArticleByTitle(start: Int, size: Int, searchTitle: String) =
         local.localArticleItems
             .asSequence()
             .filter { it.title.contains(searchTitle, true) }
@@ -43,7 +51,7 @@ object ArticlesRepository {
             .take(size)
             .toList()
 
-    fun findArticleByRange(start: Int, size: Int) =
+    private fun findArticleByRange(start: Int, size: Int) =
         local.localArticleItems
             .drop(start)
             .take(size)
@@ -106,10 +114,23 @@ sealed class ArticlesStrategy {
         override fun getItems(start: Int, size: Int): List<ArticleItemData> = itemProvider(start, size, query)
     }
 
-    class BookmarkedArticles(
+    class BookmarkArticles(
         private val itemProvider : (Int, Int) -> List<ArticleItemData>
     ): ArticlesStrategy() {
         override fun getItems(start: Int, size: Int): List<ArticleItemData> = itemProvider(start, size)
     }
 
+     class SearchBookmark(
+         private val itemProvider: (Int, Int, String) -> List<ArticleItemData>,
+         private val query: String
+     ) : ArticlesStrategy() {
+         override fun getItems(start: Int, size: Int): List<ArticleItemData> = itemProvider(start, size, query)
+     }
+
 }
+
+// Реализуй отображение отмеченных isBookmark статей в фрагменте BookmarksFragment,
+// а так же поиск статьям в закладках. Для этого необходимо реализовать следующие подклассы ArticleStrategy
+// class SearchBookmark(private val itemProvider: (Int, Int, String) -> List, private val query: String) : ArticleStrategy()
+// class BookmarkArticles(private val itemProvider: (Int, Int) -> List) : ArticleStrategy()
+// и соответствующие методы репозитория

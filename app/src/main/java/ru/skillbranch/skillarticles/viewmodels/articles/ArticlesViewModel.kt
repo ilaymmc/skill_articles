@@ -23,17 +23,16 @@ class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>
             .setEnablePlaceholders(false)
             .setPageSize(10)
             .setPrefetchDistance(10)
-//            .setPrefetchDistance(0)
             .setInitialLoadSizeHint(50)
             .build()
     }
+
     private val listData = Transformations.switchMap(state) {
         when {
             it.isSearch && !it.searchQuery.isNullOrBlank() -> buildPageList(repository.searchArticles(it.searchQuery))
             else -> buildPageList(repository.allArticles())
         }
     }
-
 
     fun observeList(
         owner: LifecycleOwner,
