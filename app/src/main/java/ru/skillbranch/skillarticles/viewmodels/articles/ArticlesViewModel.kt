@@ -116,6 +116,11 @@ class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>
         newText ?: return
         updateState { it.copy( searchQuery = newText ) }
     }
+
+    fun handleToggleBookmark(id: String, isChecked: Boolean) {
+        repository.updateBookmark(id, isChecked)
+        listData.value?.dataSource?.invalidate()
+    }
 }
 
 data class ArticlesState (

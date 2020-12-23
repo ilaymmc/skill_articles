@@ -10,11 +10,12 @@ import android.widget.ImageView
 @SuppressLint("AppCompatCustomView")
 class CheckableImageView @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet,
+    attrs: AttributeSet?,
     defStyleAttrs: Int = 0
 ) : ImageView(context, attrs, defStyleAttrs), Checkable, View.OnClickListener {
 
     private var _checked = false
+    private var _onToggleListener : ((checked: Boolean) -> Unit)? = null
 
     companion object {
         private val CHECKED_STATE_SET = intArrayOf(android.R.attr.state_checked)
@@ -32,10 +33,6 @@ class CheckableImageView @JvmOverloads constructor(
 
     override fun isChecked(): Boolean = _checked
 
-    override fun toggle() {
-        isChecked = !_checked
-    }
-
     override fun setChecked(checked: Boolean) {
         if (_checked != checked) {
             _checked = checked
@@ -43,8 +40,20 @@ class CheckableImageView @JvmOverloads constructor(
         }
     }
 
+    override fun toggle() {
+        isChecked = !_checked
+    }
+
+
     override fun onClick(v: View?) {
         toggle()
+        _onToggleListener?.let {
+            it(isChecked)
+        }
+    }
+
+    fun setOnToggleListener(listener: (checked: Boolean) -> Unit) {
+        _onToggleListener = listener
     }
 
 }

@@ -21,6 +21,20 @@ object ArticlesRepository {
     fun searchArticles(searchQuery: String): ArticlesDataFactory =
         ArticlesDataFactory(ArticlesStrategy.SearchArticles(::findArticleByTitle, searchQuery))
 
+//    fun bookmarkedArticles(): ArticlesDataFactory =
+//        ArticlesDataFactory(ArticlesStrategy.BookmarkedArticles(::findBookmarkedArticles))
+
+    fun bookmarkedArticles(): ArticlesDataFactory =
+        ArticlesDataFactory(ArticlesStrategy.AllArticles(::findBookmarkedArticles))
+
+    fun findBookmarkedArticles(start: Int, size: Int) =
+        local.localArticleItems
+            .asSequence()
+            .filter { it.isBookmark }
+            .drop(start)
+            .take(size)
+            .toList()
+
     fun findArticleByTitle(start: Int, size: Int, searchTitle: String) =
         local.localArticleItems
             .asSequence()
@@ -45,6 +59,10 @@ object ArticlesRepository {
             .apply { sleep(500) }
     }
 
+    fun updateBookmark(id: String, isChecked: Boolean) {
+        val index = local.localArticleItems.indexOfFirst { it.id == id }
+        local.localArticleItems[index] = local.localArticleItems[index].copy( isBookmark = isChecked )
+    }
 }
 
 class ArticlesDataFactory(val strategy: ArticlesStrategy) : DataSource.Factory<Int, ArticleItemData>() {
@@ -88,6 +106,10 @@ sealed class ArticlesStrategy {
         override fun getItems(start: Int, size: Int): List<ArticleItemData> = itemProvider(start, size, query)
     }
 
-    // TODO Bookmarks strategy
+    class BookmarkedArticles(
+        private val itemProvider : (Int, Int) -> List<ArticleItemData>
+    ): ArticlesStrategy() {
+        override fun getItems(start: Int, size: Int): List<ArticleItemData> = itemProvider(start, size)
+    }
 
 }

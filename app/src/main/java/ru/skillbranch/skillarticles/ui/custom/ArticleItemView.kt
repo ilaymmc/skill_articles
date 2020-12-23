@@ -26,6 +26,11 @@ import kotlin.math.*
 //R.id.tv_read_duration
 //R.id.tv_author
 
+// Реализуй переключение isBookmark для статьи при клике по CheckableImageView (R.id.iv_bookmark)
+// в ArticleItemView для этого необходимо реализовать в ArticlesViewModel метод
+// fun handleToggleBookmark(id: String, isChecked: Boolean)
+// и метод fun updateBookmark(id: String, isChecked: Boolean) в ArticlesRepository
+
 class ArticleItemView constructor(
     context: Context
 ) : ConstraintLayout(context, null, 0) {
@@ -62,7 +67,7 @@ class ArticleItemView constructor(
 
     private val iv_likes: ImageView
     private val iv_comments: ImageView
-    private val iv_bookmark: ImageView
+    private val iv_bookmark: CheckableImageView
 
     init {
 //        inflate(context, R.layout.item_article, this)
@@ -138,7 +143,7 @@ class ArticleItemView constructor(
             textSize = 12f
         }.also { addView(it) }
 
-        iv_bookmark = ImageView(context).apply {
+        iv_bookmark = CheckableImageView(context, null, 0).apply {
             id = R.id.iv_bookmark
             setImageDrawable(
                 context.getDrawable(R.drawable.bookmark_states)!!.apply { setTint(colorGray) }
@@ -320,7 +325,7 @@ class ArticleItemView constructor(
         }
     }
 
-    fun bind(data: ArticleItemData) {
+    fun bind(data: ArticleItemData, toggle: (Boolean)->Unit) {
 
         val cornerRadius = context.dpToIntPx(8)
 
@@ -350,6 +355,8 @@ class ArticleItemView constructor(
         tv_likes_count.text = "${data.likeCount}"
         tv_comments_count.text = "${data.commentCount}"
         tv_read_duration.text = "${data.readDuration} mins read"
+        iv_bookmark.isChecked = data.isBookmark
+        iv_bookmark.setOnToggleListener(toggle)
 
     }
 }

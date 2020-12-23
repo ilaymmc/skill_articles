@@ -39,22 +39,27 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         viewModel.handleSearchMode(false)
     }
 
-    private var articlesAdapter = ArticlesAdapter { item ->
-        val direction = ArticlesFragmentDirections.actionNavArticlesToPageArticle(
-            item.id,
-            item.author,
-            item.authorAvatar,
-            item.category,
-            item.categoryIcon,
-            item.date,
-            item.poster,
-            item.title)
+    private var articlesAdapter = ArticlesAdapter (
+        clickListener = { item ->
+            val direction = ArticlesFragmentDirections.actionNavArticlesToPageArticle(
+                item.id,
+                item.author,
+                item.authorAvatar,
+                item.category,
+                item.categoryIcon,
+                item.date,
+                item.poster,
+                item.title)
 
-        viewModel.navigate(NavigationCommand.To(
-            direction.actionId,
-            direction.arguments
-        ))
-    }
+            viewModel.navigate(NavigationCommand.To(
+                direction.actionId,
+                direction.arguments
+            ))
+        },
+        bookmarkToggleListener = { id, isChecked ->
+            viewModel.handleToggleBookmark(id, isChecked)
+        }
+    )
 
     override fun setupViews() {
         with(rv_articles) {
