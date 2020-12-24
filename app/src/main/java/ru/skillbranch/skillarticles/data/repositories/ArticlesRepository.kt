@@ -60,11 +60,11 @@ object ArticlesRepository {
         network.networkArticleItems
             .drop(start)
             .take(size)
-            .apply { sleep(100) }
+            .apply { sleep(500) }
 
     fun insertArticlesToDd(articles : List<ArticleItemData>) {
         local.localArticleItems.addAll(articles)
-            .apply { sleep(100) }
+            .apply { sleep(500) }
     }
 
     fun updateBookmark(id: String, isChecked: Boolean) {
