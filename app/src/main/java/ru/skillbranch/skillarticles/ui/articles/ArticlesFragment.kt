@@ -7,6 +7,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_articles.*
+import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.ui.base.*
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
@@ -57,7 +58,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             ))
         },
         bookmarkToggleListener = { id, isChecked ->
-            viewModel.handleToggleBookmark(id, isChecked)
+            viewModel.handleToggleBookmark(id, !isChecked)
         }
     )
 
@@ -138,8 +139,16 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             isLoading = data.isLoading
             searchQuery = data.searchQuery
         }
+        // TODO save UI 47:45 ?
+        override fun saveUi(outState: Bundle) {
+            outState.putString(::searchQuery.name, searchQuery)
+            outState.putBoolean(::isFocusedSearch.name, search_view?.hasFocus() ?: false)
+            outState.putBoolean(::isLoading.name, isLoading)
+        }
+        override fun restoreUi(savedState: Bundle?) {
+            searchQuery = savedState?.getString(::searchQuery.name) ?: ""
+            isFocusedSearch = savedState?.getBoolean(::isFocusedSearch.name) ?: false
+            isLoading = savedState?.getBoolean(::isLoading.name) ?: false
+        }
     }
-
-    // TODO save UI 47:45 ?
-
 }

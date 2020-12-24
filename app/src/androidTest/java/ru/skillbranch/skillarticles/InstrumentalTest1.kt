@@ -79,10 +79,9 @@ class InstrumentalTest1 {
             val rv = findViewById<RecyclerView>(R.id.rv_articles)
             assertEquals(
                 "RecycleView scroll to position 35 lastKey",
-                33,
+                32, //33,
                 (rv.adapter as PagedListAdapter<*, *>).currentList?.lastKey
             )
-
         }
         onView(withId(R.id.rv_articles))
             .perform(RecyclerViewActions.scrollToPosition<ArticleVH>(50))
@@ -91,7 +90,7 @@ class InstrumentalTest1 {
             val rv = findViewById<RecyclerView>(R.id.rv_articles)
             assertEquals(
                 "RecycleView scroll to position 50 lastKey",
-                58,
+                57, //58,
                 (rv.adapter as PagedListAdapter<*, *>).currentList?.lastKey
             )
         }

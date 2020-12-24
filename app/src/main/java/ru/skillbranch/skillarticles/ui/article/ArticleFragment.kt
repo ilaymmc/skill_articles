@@ -4,12 +4,16 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.*
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -18,9 +22,14 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_article.*
+import kotlinx.android.synthetic.main.fragment_article.view.*
 import kotlinx.android.synthetic.main.layout_bottombar.view.*
 import kotlinx.android.synthetic.main.layout_submenu.view.*
 import kotlinx.android.synthetic.main.search_view_layout.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.*
@@ -31,7 +40,9 @@ import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.Notify
 import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
+import java.lang.Thread.sleep
 
 class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     private val args : ArticleFragmentArgs by navArgs()
@@ -113,7 +124,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             view.clearFocus()
             true
         }
-
         et_comment.setOnFocusChangeListener { v, hasFocus -> viewModel.handleCommentFocus(hasFocus) }
 
         wrap_comments.setEndIconOnClickListener { view ->
@@ -121,7 +131,13 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             viewModel.handleClearComment()
             et_comment.text = null
             et_comment.clearFocus()
+        }
 
+        binding.savedCommentText?.let {
+            Handler().postDelayed({
+                et_comment.setText(it, TextView.BufferType.SPANNABLE)
+                et_comment.requestFocus()
+            }, 10)
         }
 
         with(rv_comments) {
@@ -243,6 +259,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     inner class ArticleBinding : Binding() {
         var isFocusedSearch: Boolean = false
         var searchQuery: String? = null
+        var savedCommentText: String? = null
         private var answerTo: String by RenderProp("Comment") {
             wrap_comments.hint = it
         }
@@ -343,6 +360,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             searchPosition = data.searchPosition
             answerTo = data.answerTo ?: "Comment"
             isShowBottombar = data.showBottomBar
+            savedCommentText = data.commentText
         }
         override fun saveUi(outState: Bundle) {
             outState.putBoolean(::isFocusedSearch.name, search_view?.hasFocus() ?: false)

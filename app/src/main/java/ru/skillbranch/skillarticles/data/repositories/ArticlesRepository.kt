@@ -75,7 +75,6 @@ object ArticlesRepository {
 
 class ArticlesDataFactory(val strategy: ArticlesStrategy) : DataSource.Factory<Int, ArticleItemData>() {
     override fun create(): DataSource<Int, ArticleItemData> = ArticlesDataSource(strategy)
-
 }
 
 class ArticlesDataSource(private val strategy: ArticlesStrategy) : PositionalDataSource<ArticleItemData>() {

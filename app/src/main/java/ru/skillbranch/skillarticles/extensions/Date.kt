@@ -18,3 +18,8 @@ fun Date.add(value: Int, units: TimeUnits) : Date = Date(this.time + value * uni
 fun Date.humanizeDiff(): String {
     return this.format()
 }
+
+fun Date.shortFormat(): String {
+    return SimpleDateFormat().format(this)
+}
+

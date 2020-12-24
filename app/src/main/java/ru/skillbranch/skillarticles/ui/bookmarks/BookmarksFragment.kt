@@ -63,7 +63,7 @@ class BookmarksFragment : BaseFragment<BookmarksViewModel>() {
             ))
         },
         bookmarkToggleListener = { id, isChecked ->
-            viewModel.handleToggleBookmark(id, isChecked)
+            viewModel.handleToggleBookmark(id, !isChecked)
         }
     )
 

@@ -25,8 +25,8 @@ class ArticlesAdapter(
 
     override fun onBindViewHolder(holder: ArticleVH, position: Int) {
         val item = getItem(position)
-        holder.bind(item, listener = clickListener, toggle = { checked ->
-            item?.let { bookmarkToggleListener(it.id, checked) }
+        holder.bind(item, listener = clickListener, toggle = { id, checked ->
+            item?.let { bookmarkToggleListener(id, checked) }
         } )
     }
 }
@@ -43,7 +43,7 @@ class ArticleVH(override val containerView: ArticleItemView) : RecyclerView.View
     fun bind(
         item: ArticleItemData?,
         listener: (ArticleItemData) -> Unit,
-        toggle: (Boolean) -> Unit
+        toggle: (String, Boolean) -> Unit
     ) {
 
         // item can be null if we use placeholder

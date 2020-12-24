@@ -98,7 +98,7 @@ private val articleItems = Array(6) {
             author = "Veronika Petruskova",
             authorAvatar = "https://miro.medium.com/fit/c/96/96/1*VSq5CqY3y1Bb4CLK83ZIuw.png",
             poster = "https://miro.medium.com/max/1920/1*u4uWVOpqFCR1gGpJTewhhA.jpeg"
-            )
+        )
 
         3 -> ArticleItemData(
             id = "0",
@@ -109,7 +109,7 @@ private val articleItems = Array(6) {
             author = "Sagar Begale",
             authorAvatar = "https://miro.medium.com/fit/c/96/96/2*0yEmon3hJKcxVIXjSJeR3Q.jpeg",
             poster = "https://miro.medium.com/max/1600/0*BDD1KysQZFMeH3pc.png"
-            )
+        )
 
         4 -> ArticleItemData(
             id = "0",
@@ -141,7 +141,7 @@ private val articleItems = Array(6) {
             title = "Drawing a rounded corner background on text",
             description = "Let’s say that we need to draw a **rounded** corner background on text, supporting the following cases",
             poster = "https://miro.medium.com/max/4209/1*GHjquSrfS6bNSjr_rsDSJw.png"
-            )
+        )
     }
 }.toList()
 

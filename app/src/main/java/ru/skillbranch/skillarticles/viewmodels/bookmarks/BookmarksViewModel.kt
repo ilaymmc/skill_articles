@@ -17,22 +17,28 @@ import ru.skillbranch.skillarticles.viewmodels.base.Notify
 import java.util.concurrent.Executors
 
 class BookmarksViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>(handle, ArticlesState()) {
-        private val repository = ArticlesRepository
-        private val listConfig by lazy {
-            PagedList.Config.Builder()
-                .setEnablePlaceholders(false)
-                .setPageSize(10)
-                .setPrefetchDistance(10)
-                .setInitialLoadSizeHint(50)
-                .build()
-        }
+    private val repository = ArticlesRepository
+    private val listConfig by lazy {
+        PagedList.Config.Builder()
+            .setEnablePlaceholders(false)
+            .setPageSize(10)
+            .setPrefetchDistance(30)
+            .setInitialLoadSizeHint(50)
+            .build()
+    }
 
-        private val listData = Transformations.switchMap(state) {
-            when {
-                it.isSearch && !it.searchQuery.isNullOrBlank() -> buildPageList(repository.searchBookmarkedArticles(it.searchQuery))
-                else -> buildPageList(repository.bookmarkedArticles())
+        private val listData =
+            Transformations.switchMap(state) {
+                when {
+                    it.isSearch && !it.searchQuery.isNullOrBlank() -> buildPageList(
+                        repository.searchBookmarkedArticles(
+                            it.searchQuery
+                        )
+                    )
+                    else -> buildPageList(repository.bookmarkedArticles())
+                }
             }
-        }
+
 
         fun observeList(
             owner: LifecycleOwner,
@@ -52,12 +58,12 @@ class BookmarksViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState
                 listConfig
             )
 
-            if (dataFactory.strategy is ArticlesStrategy.AllArticles) {
-                builder.setBoundaryCallback(ArticlesBoundaryCallback(
-                    ::zeroLoadingHandler,
-                    ::itemAtEndHandler
-                ))
-            }
+//            if (dataFactory.strategy is ArticlesStrategy.BookmarkArticles) {
+//                builder.setBoundaryCallback(ArticlesBoundaryCallback(
+//                    ::zeroLoadingHandler,
+//                    ::itemAtEndHandler
+//                ))
+//            }
 
             return builder
                 .setFetchExecutor(Executors.newSingleThreadExecutor())
@@ -67,7 +73,7 @@ class BookmarksViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState
         private var isLoading = false
 
         private fun itemAtEndHandler(articleItemData: ArticleItemData) {
-            Log.e("ArticlesViewModel", "itemAtEndHandler(${articleItemData.id})")
+            Log.e("BookmarksViewModel", "itemAtEndHandler(${articleItemData.id})")
             if (isLoading)
                 return
 //        notify(Notify.TextMessage("End reached"))
@@ -78,7 +84,7 @@ class BookmarksViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState
                     size = listConfig.pageSize)
                 if (items.isNotEmpty()) {
                     repository.insertArticlesToDd(items)
-                    Log.e("ArticlesViewModel", "invalidate new ${items.size}")
+                    Log.e("BookmarksViewModel", "invalidate new ${items.size}")
                     listData.value?.dataSource?.invalidate()
                 }
                 isLoading = false
@@ -91,13 +97,13 @@ class BookmarksViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState
         }
 
         private fun zeroLoadingHandler() {
-            Log.e("ArticlesViewModel", "zeroLoadingHandler()")
+            Log.e("BookmarksViewModel", "zeroLoadingHandler()")
             notify(Notify.TextMessage("Storage is empty"))
             viewModelScope.launch(Dispatchers.IO) {
                 val items = repository.loadArticlesFromNetwork(0, listConfig.initialLoadSizeHint)
                 if (items.isNotEmpty()) {
                     repository.insertArticlesToDd(items)
-                    Log.e("ArticlesViewModel", "invalidate new ${items.size}")
+                    Log.e("BookmarksViewModel", "invalidate new ${items.size}")
                     listData.value?.dataSource?.invalidate()
                 }
                 withContext(Dispatchers.Main) {

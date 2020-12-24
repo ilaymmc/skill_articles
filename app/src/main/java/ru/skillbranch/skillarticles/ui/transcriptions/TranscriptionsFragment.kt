@@ -27,7 +27,6 @@ class TranscriptionsFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(TranscriptionsViewModel::class.java)
-        // TODO: Use the ViewModel
     }
 
 }

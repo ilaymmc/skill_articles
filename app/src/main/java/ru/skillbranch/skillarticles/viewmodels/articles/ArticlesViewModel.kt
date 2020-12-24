@@ -22,17 +22,27 @@ class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>
         PagedList.Config.Builder()
             .setEnablePlaceholders(false)
             .setPageSize(10)
-            .setPrefetchDistance(10)
+            .setPrefetchDistance(30)
             .setInitialLoadSizeHint(50)
             .build()
     }
 
-    private val listData = Transformations.switchMap(state) {
-        when {
-            it.isSearch && !it.searchQuery.isNullOrBlank() -> buildPageList(repository.searchArticles(it.searchQuery))
-            else -> buildPageList(repository.allArticles())
-        }
+    private val allArticlesList by lazy {
+        buildPageList(repository.allArticles())
     }
+
+    private val listData =
+        Transformations.switchMap(state) {
+            when {
+                it.isSearch && !it.searchQuery.isNullOrBlank() -> buildPageList(
+                    repository.searchArticles(
+                        it.searchQuery
+                    )
+                )
+                else -> allArticlesList
+            }
+        }
+
 
     fun observeList(
         owner: LifecycleOwner,

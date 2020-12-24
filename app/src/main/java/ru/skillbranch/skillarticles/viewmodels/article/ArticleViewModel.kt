@@ -187,15 +187,17 @@ class ArticleViewModel(handle: SavedStateHandle, private val articleId: String):
     }
 
     fun handleSendComment(comment: String) {
-        if (!currentState.isAuth)
+        if (!currentState.isAuth) {
+            updateState { it.copy(commentText = comment) }
             navigate(NavigationCommand.StartLogin())
-        viewModelScope.launch {
-            repository.sendComment(articleId, comment, currentState.answerToSlug)
-            withContext(Dispatchers.Main) {
-                updateState { it.copy( answerTo = null, answerToSlug = null) }
+        } else {
+            viewModelScope.launch {
+                repository.sendComment(articleId, comment, currentState.answerToSlug)
+                withContext(Dispatchers.Main) {
+                    updateState { it.copy(answerTo = null, answerToSlug = null) }
+                }
             }
         }
-
     }
 
     fun observeList(
@@ -224,7 +226,6 @@ class ArticleViewModel(handle: SavedStateHandle, private val articleId: String):
 
     fun handleReplyTo(slug: String, name: String) {
         updateState { it.copy(answerToSlug = slug, answerTo = "Reply to $name") }
-
     }
 
 }
@@ -253,10 +254,12 @@ data class ArticleState(
     val commentsCount: Int = 0,
     val answerTo: String? = null,
     val answerToSlug : String? = null,
-    val showBottomBar: Boolean = true
+    val showBottomBar: Boolean = true,
+    val commentText : String? = null
 ) : IViewModelState {
     override fun save(outState: SavedStateHandle) {
-        // TODO save state answers
+        outState.set("answerTo", answerTo)
+        outState.set("answerToSlug", answerToSlug)
 
         outState.set("isSearch", isSearch)
         outState.set("searchPosition", searchPosition)
@@ -265,12 +268,14 @@ data class ArticleState(
     }
 
     override fun restore(savedState: SavedStateHandle): IViewModelState {
-        // TODO restore state answers
         return copy(
             isSearch = savedState["isSearch"] ?: false,
             searchQuery = savedState["searchQuery"],
             searchResults = savedState["searchResult"] ?: emptyList(),
-            searchPosition = savedState["searchPosition"] ?: 0
+            searchPosition = savedState["searchPosition"] ?: 0,
+
+            answerTo = savedState["answerTo"],
+            answerToSlug = savedState["answerToSlug"]
         )
     }
 }
