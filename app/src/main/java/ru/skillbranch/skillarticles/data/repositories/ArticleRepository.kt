@@ -51,7 +51,7 @@ object ArticleRepository {
             size > 0 -> data.dropWhile { it.slug != slug }.drop(1).take(size)
             size < 0 -> data.dropLastWhile { it.slug != slug }.dropLast(1).takeLast(-size)
             else -> emptyList()
-        }.apply { sleep(500) }
+        }.apply { sleep(100) }
     }
 
     fun sendComment(articleId: String, comment: String, answerToSlug: String?) {

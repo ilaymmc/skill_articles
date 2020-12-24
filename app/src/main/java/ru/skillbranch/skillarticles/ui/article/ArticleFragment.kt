@@ -132,20 +132,19 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             et_comment.text = null
             et_comment.clearFocus()
         }
-
-        binding.savedCommentText?.let {
-            Handler().postDelayed({
-                et_comment.setText(it, TextView.BufferType.SPANNABLE)
-                et_comment.requestFocus()
-            }, 10)
-        }
-
         with(rv_comments) {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = commentsAdapter
         }
-
         viewModel.observeList(viewLifecycleOwner) { commentsAdapter.submitList(it) }
+
+        binding.savedCommentText?.let {
+            et_comment.setText(it, TextView.BufferType.SPANNABLE)
+            Handler().postDelayed({
+                et_comment.setText(it, TextView.BufferType.SPANNABLE)
+            }, 0)
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?){
