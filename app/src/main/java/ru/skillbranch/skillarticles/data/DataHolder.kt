@@ -8,6 +8,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.skillbranch.skillarticles.data.EntityGenerator.generateArticleItems
 import ru.skillbranch.skillarticles.data.EntityGenerator.generateComments
+import ru.skillbranch.skillarticles.data.local.entitles.ArticleItem
+import ru.skillbranch.skillarticles.data.local.entitles.ArticlePersonalInfo
 import ru.skillbranch.skillarticles.data.models.*
 import java.util.*
 
@@ -15,13 +17,13 @@ object LocalDataHolder {
     private val articleInfo = MutableLiveData<ArticlePersonalInfo?>(null)
     private val settings = MutableLiveData(AppSettings())
     private val isAuth = MutableLiveData(false)
-    val localArticleItems: MutableList<ArticleItemData> = mutableListOf()
+    val LOCAL_ARTICLE_ITEMS: MutableList<ArticleItem> = mutableListOf()
     val localArticles: MutableMap<String, MutableLiveData<ArticleData>> = mutableMapOf()
 
     fun findArticle(articleId: String): LiveData<ArticleData?> {
         if (localArticles[articleId] == null) {
             Log.e("DataHolder", "findArticle $articleId: ");
-            val article = localArticleItems.find { it.id == articleId }
+            val article = LOCAL_ARTICLE_ITEMS.find { it.id == articleId }
             localArticles[articleId] = MutableLiveData(EntityGenerator.generateArticle(article ?: EntityGenerator.createArticleItem(articleId)))
         }
         return localArticles[articleId]!!
@@ -30,9 +32,11 @@ object LocalDataHolder {
     fun findArticlePersonalInfo(articleId: String): LiveData<ArticlePersonalInfo?> {
         GlobalScope.launch {
             delay(500)
-            articleInfo.postValue(ArticlePersonalInfo(
-                isBookmark = localArticleItems.find { it.id == articleId }?.isBookmark ?: true
-            ))
+            articleInfo.postValue(
+                ArticlePersonalInfo(
+                isBookmark = LOCAL_ARTICLE_ITEMS.find { it.id == articleId }?.isBookmark ?: true
+            )
+            )
         }
         return articleInfo
     }
@@ -61,10 +65,10 @@ object LocalDataHolder {
 
 object NetworkDataHolder {
 
-    val networkArticleItems: List<ArticleItemData> = generateArticleItems(200)
+    val NETWORK_ARTICLE_ITEMS: List<ArticleItem> = generateArticleItems(200)
 
     val commentsData: Map<String, MutableList<CommentItemData>> by lazy {
-        networkArticleItems.associate { article ->
+        NETWORK_ARTICLE_ITEMS.associate { article ->
             article.id to generateComments(article.id, article.commentCount) as MutableList
         }
     }

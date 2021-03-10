@@ -7,10 +7,9 @@ import androidx.paging.PagedList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ru.skillbranch.skillarticles.data.models.ArticleItemData
+import ru.skillbranch.skillarticles.data.local.entitles.ArticleItem
 import ru.skillbranch.skillarticles.data.repositories.ArticlesDataFactory
 import ru.skillbranch.skillarticles.data.repositories.ArticlesRepository
-import ru.skillbranch.skillarticles.data.repositories.ArticlesStrategy
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
@@ -42,7 +41,7 @@ class BookmarksViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState
 
         fun observeList(
             owner: LifecycleOwner,
-            onChange: (list: PagedList<ArticleItemData>) -> Unit
+            onChange: (list: PagedList<ArticleItem>) -> Unit
         ) {
             listData.observe(owner, Observer {
                 onChange(it)
@@ -52,8 +51,8 @@ class BookmarksViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState
 
         private fun buildPageList(
             dataFactory: ArticlesDataFactory
-        ): LiveData<PagedList<ArticleItemData>> {
-            val builder = LivePagedListBuilder<Int, ArticleItemData>(
+        ): LiveData<PagedList<ArticleItem>> {
+            val builder = LivePagedListBuilder<Int, ArticleItem>(
                 dataFactory,
                 listConfig
             )
@@ -72,15 +71,15 @@ class BookmarksViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState
 
         private var isLoading = false
 
-        private fun itemAtEndHandler(articleItemData: ArticleItemData) {
-            Log.e("BookmarksViewModel", "itemAtEndHandler(${articleItemData.id})")
+        private fun itemAtEndHandler(articleItem: ArticleItem) {
+            Log.e("BookmarksViewModel", "itemAtEndHandler(${articleItem.id})")
             if (isLoading)
                 return
 //        notify(Notify.TextMessage("End reached"))
             viewModelScope.launch(Dispatchers.IO) {
                 isLoading = true
                 val items = repository.loadArticlesFromNetwork(
-                    start = articleItemData.id.toInt().inc(),
+                    start = articleItem.id.toInt().inc(),
                     size = listConfig.pageSize)
                 if (items.isNotEmpty()) {
                     repository.insertArticlesToDd(items)
@@ -137,13 +136,13 @@ class BookmarksViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState
 
     class ArticlesBoundaryCallback(
         private val zeroLoadingHandler: () -> Unit,
-        private val itemAtEndHandler: (itemAtEnd: ArticleItemData) -> Unit
-    ): PagedList.BoundaryCallback<ArticleItemData>() {
+        private val itemAtEndHandler: (itemAtEnd: ArticleItem) -> Unit
+    ): PagedList.BoundaryCallback<ArticleItem>() {
         override fun onZeroItemsLoaded() {
             zeroLoadingHandler()
         }
 
-        override fun onItemAtEndLoaded(itemAtEnd: ArticleItemData) {
+        override fun onItemAtEndLoaded(itemAtEnd: ArticleItem) {
             itemAtEndHandler(itemAtEnd)
         }
     }

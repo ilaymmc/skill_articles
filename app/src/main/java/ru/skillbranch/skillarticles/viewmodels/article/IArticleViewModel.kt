@@ -2,7 +2,7 @@ package ru.skillbranch.skillarticles.viewmodels.article
 
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.models.ArticleData
-import ru.skillbranch.skillarticles.data.models.ArticlePersonalInfo
+import ru.skillbranch.skillarticles.data.local.entitles.ArticlePersonalInfo
 
 interface IArticleViewModel {
     /**

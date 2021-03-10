@@ -3,7 +3,9 @@ package ru.skillbranch.skillarticles.ui.articles
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_articles.*
@@ -17,12 +19,12 @@ import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 
 class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
-    override val viewModel: ArticlesViewModel by viewModels()
-
+    override val viewModel: ArticlesViewModel by activityViewModels()
     override val layout = R.layout.fragment_articles
     override val binding: ArticlesBinding by lazy {
         ArticlesBinding()
     }
+    private val args: ArticlesFragmentArgs by navArgs()
 
     override val prepareToolbar: (ToolbarBuilder.() -> Unit) = {
         addMenuItem(
@@ -69,7 +71,10 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
 
-        viewModel.observeList(viewLifecycleOwner) {
+        viewModel.observeList(
+            owner = viewLifecycleOwner,
+            isBookmark = args.isBookmarks
+        ) {
             articlesAdapter.submitList(it)
         }
      }
