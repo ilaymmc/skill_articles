@@ -45,6 +45,9 @@
             android:name="isBookmarks"
             android:defaultValue="false"
             app:argType="boolean" />
+        <action
+            android:id="@+id/chose_category"
+            app:destination="@id/dialog_chose_category" />
     </fragment>
     <fragment
         android:id="@+id/nav_bookmarks"
@@ -58,6 +61,9 @@
             android:name="isBookmarks"
             android:defaultValue="true"
             app:argType="boolean" />
+        <action
+            android:id="@+id/chose_category"
+            app:destination="@id/dialog_chose_category" />
     </fragment>
     <fragment
         android:id="@+id/nav_profile"
@@ -104,4 +110,14 @@
         android:id="@+id/finish_login"
         app:popUpTo="@id/auth"
         app:popUpToInclusive="true"/>
+    <dialog
+        android:id="@+id/dialog_chose_category"
+        android:name="ru.skillbranch.skillarticles.ui.dialogs.ChoseCategoryDialog"
+        android:label="Chose Category" >
+        <argument
+            android:name="selected_categories"
+            app:argType="string[]" />
+        <argument android:name="categories"
+            app:argType="ru.skillbranch.skillarticles.data.local.entities.CategoryData[]" />
+    </dialog>
 </navigation>

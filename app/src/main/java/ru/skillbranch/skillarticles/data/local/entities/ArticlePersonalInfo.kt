@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.data.local.entitles
+package ru.skillbranch.skillarticles.data.local.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

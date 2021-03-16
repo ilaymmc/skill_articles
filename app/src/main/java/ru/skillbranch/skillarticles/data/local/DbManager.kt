@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import ru.skillbranch.skillarticles.App
 import ru.skillbranch.skillarticles.BuildConfig
 import ru.skillbranch.skillarticles.data.local.dao.*
-import ru.skillbranch.skillarticles.data.local.entitles.*
+import ru.skillbranch.skillarticles.data.local.entities.*
 
 object DbManager {
     @SuppressLint("StaticFieldLeak")
@@ -28,7 +28,8 @@ object DbManager {
         Category::class,
         ArticlePersonalInfo::class,
         Tag::class,
-        ArticleTagXref::class],
+        ArticleTagXRef::class,
+        ArticleContent::class],
     version = AppDb.DATABASE_VERSION,
     exportSchema = false,
     views = [ArticleItem::class]
@@ -40,10 +41,12 @@ abstract class AppDb : RoomDatabase() {
         const val DATABASE_VERSION = 1
     }
 
-    abstract fun articlesDao() : ArticlesDao
-    abstract fun articlesCountsDao() : ArticleCountsDao
-    abstract fun categoriesDao() : CategoriesDao
-    abstract fun articlePersonalInfosDao() : ArticlePersonalInfosDao
-    abstract fun tagsDao() : TagsDao
+    abstract fun articlesDao(): ArticlesDao
+    abstract fun articleCountsDao(): ArticleCountsDao
+    abstract fun categoriesDao(): CategoriesDao
+    abstract fun articlePersonalInfosDao(): ArticlePersonalInfosDao
+    abstract fun tagsDao(): TagsDao
+    abstract fun articleContentDao(): ArticleContentDao
+
 
 }

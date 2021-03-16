@@ -1,13 +1,21 @@
 package ru.skillbranch.skillarticles.extensions.data
 
 import ru.skillbranch.skillarticles.data.models.AppSettings
-import ru.skillbranch.skillarticles.data.local.entitles.ArticlePersonalInfo
+import ru.skillbranch.skillarticles.data.local.entities.ArticlePersonalInfo
+import ru.skillbranch.skillarticles.data.repositories.ArticleFilter
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
+import java.util.*
 
 fun ArticleState.toAppSettings() : AppSettings {
     return AppSettings(isDarkMode,isBigText)
 }
 
 fun ArticleState.toArticlePersonalInfo(): ArticlePersonalInfo {
-    return ArticlePersonalInfo(isLike, isBookmark)
+    return ArticlePersonalInfo(
+        "",
+        isLike = false,
+        isBookmark = false,
+        updatedAt = Date()
+    )
 }
+

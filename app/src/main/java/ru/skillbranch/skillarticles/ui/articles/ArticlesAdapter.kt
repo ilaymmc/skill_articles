@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.item_article.view.*
-import ru.skillbranch.skillarticles.data.local.entitles.ArticleItem
+import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.ui.custom.ArticleItemView
 
 class ArticlesAdapter(
