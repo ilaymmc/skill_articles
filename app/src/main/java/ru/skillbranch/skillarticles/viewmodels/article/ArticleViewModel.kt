@@ -15,6 +15,7 @@ import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.indexesOf
 import ru.skillbranch.skillarticles.extensions.format
+import ru.skillbranch.skillarticles.extensions.shortFormat
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
@@ -22,7 +23,7 @@ import ru.skillbranch.skillarticles.viewmodels.base.Notify
 import java.util.concurrent.Executors
 
 class ArticleViewModel(handle: SavedStateHandle, private val articleId: String):
-    BaseViewModel<ArticleState>(handle, ArticleState()) {
+    BaseViewModel<ArticleState>(handle, ArticleState()), IArticleViewModel {
 
     private val repository = ArticleRepository
     private val rootRepository = RootRepository
@@ -35,41 +36,27 @@ class ArticleViewModel(handle: SavedStateHandle, private val articleId: String):
             .build()
     }
 
-    private val listData: LiveData<PagedList<CommentItemData>> = Transformations.switchMap(getArticleData()) {
-        buildPagedList(repository.allComments(articleId, it?.commentCount ?: 0))
+    private val listData: LiveData<PagedList<CommentItemData>> = Transformations.switchMap(repository.findArticleCommentCount(articleId)) {
+        buildPagedList(repository.loadAllComments(articleId, it))
     }
 
 
     init {
-        subscribeOnDataSource(getArticleData()) { article, state ->
-            article ?: return@subscribeOnDataSource null
+        subscribeOnDataSource(repository.findArticle(articleId)) { article, state ->
             Log.d("ArticleViewModel", "getArticleData")
+            if (article.content == null)
+                fetchContent()
             state.copy(
                 shareLink = article.shareLink,
                 title = article.title,
-                category = article.category,
-                categoryIcon = article.categoryIcon,
-                date = article.date.format(),
+                category = article.category.title,
+                categoryIcon = article.category.icon,
+                date = article.date.shortFormat(),
                 author = article.author,
-                poster = article.poster
-            )
-        }
-
-        subscribeOnDataSource(getArticleContent()) { content, state ->
-            content ?: return@subscribeOnDataSource null
-            Log.d("ArticleViewModel", "getArticleContent")
-            state.copy(
-                isLoadingContent = false,
-                content = content
-            )
-        }
-
-        subscribeOnDataSource(getArticlePersonalInfo()) { info, state ->
-            info ?: return@subscribeOnDataSource null
-            Log.d("ArticleViewModel", "getArticlePersonalInfo")
-            state.copy(
-                isBookmark = info.isBookmark,
-                isLike = info.isLike
+                isBookmark = article.isBookmark,
+                isLike = article.isLike,
+                content = article.content ?: emptyList(),
+                isLoadingContent = article.content == null
             )
         }
 
@@ -87,67 +74,66 @@ class ArticleViewModel(handle: SavedStateHandle, private val articleId: String):
 
     }
 
-    private fun getArticleContent(): LiveData<List<MarkdownElement>?> {
-        return repository.loadArticleContent(articleId)
+    private fun fetchContent() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.fetchArticleContent(articleId)
+        }
     }
 
-    private fun getArticleData(): LiveData<ArticleData?> {
-        return repository.getArticle(articleId)
-    }
-    private fun getArticlePersonalInfo() : LiveData<ArticlePersonalInfo?> {
-        return repository.loadArticlePersonalInfo(articleId)
-    }
-
-    fun handleUpText() {
+    override fun handleUpText() {
         val settings = currentState.toAppSettings()
         repository.updateSettings(settings.copy(isBigText = true))
     }
 
-    fun handleDownText() {
+    override fun handleDownText() {
         val settings = currentState.toAppSettings()
         repository.updateSettings(settings.copy(isBigText = false))
     }
 
-    fun handleNightMode() {
+    override fun handleNightMode() {
         val settings = currentState.toAppSettings()
         repository.updateSettings(settings.copy(isDarkMode = !settings.isDarkMode))
     }
 
-    fun handleLike() {
-        val toggleLike = {
-            val info = currentState.toArticlePersonalInfo()
-            repository.updateArticlePersonalInfo(info.copy(isLike = !info.isLike))
-        }
-        toggleLike()
-
+    override fun handleLike() {
+        val isLiked = currentState.isLike
         val msg = if (currentState.isLike) Notify.TextMessage("Mark is liked")
         else {
             Notify.ActionMessage (
                 "Don`t like it anymore",
-                "No, still like it",
-                toggleLike
-            )
+                "No, still like it"
+            ) {
+                handleLike()
+            }
         }
-
-        notify(msg)
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.toggleLike(articleId)
+            if (isLiked)
+                repository.decrementLike(articleId)
+            else
+                repository.incrementLike(articleId)
+            withContext(Dispatchers.Main) {
+                notify(msg)
+            }
+        }
     }
 
-    fun handleBookmark() {
-        val info = currentState.toArticlePersonalInfo()
-        repository.updateArticlePersonalInfo(info.copy(
-            isBookmark = !info.isBookmark
-        ))
-
-        val msg = if (!info.isBookmark) "Add to bookmarks" else "Remove from bookmarks"
-        notify(Notify.ErrorMessage(msg, "OK", null))
+    override fun handleBookmark() {
+        val msg = if (!currentState.isBookmark) "Add to bookmarks" else "Remove from bookmarks"
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.toggleBookmark(articleId)
+            withContext(Dispatchers.Main) {
+                notify(Notify.ErrorMessage(msg, "OK", null))
+            }
+        }
     }
 
-    fun handleShare() {
+    override fun handleShare() {
         val msg = "Share is not implemented"
         notify(Notify.ErrorMessage(msg, "OK", null))
     }
 
-    fun handleToggleMenu() {
+    override fun handleToggleMenu() {
         updateState { it.copy(isShowMenu = !it.isShowMenu) }
     }
 
@@ -191,8 +177,8 @@ class ArticleViewModel(handle: SavedStateHandle, private val articleId: String):
             updateState { it.copy(commentText = comment) }
             navigate(NavigationCommand.StartLogin())
         } else {
-            viewModelScope.launch {
-                repository.sendComment(articleId, comment, currentState.answerToSlug)
+            viewModelScope.launch(Dispatchers.IO) {
+                repository.sendMessage(articleId, comment, currentState.answerToSlug)
                 withContext(Dispatchers.Main) {
                     updateState { it.copy(answerTo = null, answerToSlug = null) }
                 }

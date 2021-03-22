@@ -5,17 +5,14 @@ import androidx.paging.DataSource
 import androidx.sqlite.db.SimpleSQLiteQuery
 import ru.skillbranch.skillarticles.data.NetworkDataHolder
 import ru.skillbranch.skillarticles.data.local.DbManager.db
-import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
-import ru.skillbranch.skillarticles.data.local.entities.ArticleTagXRef
-import ru.skillbranch.skillarticles.data.local.entities.CategoryData
-import ru.skillbranch.skillarticles.data.local.entities.Tag
+import ru.skillbranch.skillarticles.data.local.entities.*
 import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
 import ru.skillbranch.skillarticles.extensions.data.toArticle
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
 
 interface IArticlesRepository {
     fun loadArticlesFromNetwork(start: Int = 0, size: Int): List<ArticleRes>
-    fun insertArticlesToDd(articles: List<ArticleRes>)
+    fun insertArticlesToDb(articles: List<ArticleRes>)
     fun toggleBookmark(articleId: String)
     fun findTags() : LiveData<List<String>>
     fun findCategoriesData() : LiveData<List<CategoryData>>
@@ -34,14 +31,14 @@ object ArticlesRepository : IArticlesRepository {
     override fun loadArticlesFromNetwork(start: Int, size: Int): List<ArticleRes> =
         network.findArticlesItem(start, size)
 
-    override fun insertArticlesToDd(articles: List<ArticleRes>) {
+    override fun insertArticlesToDb(articles: List<ArticleRes>) {
         articlesDao.upsert(articles.map { it.data.toArticle() })
         articleCountsDao.upsert(articles.map { it.counts.toArticleCounts() })
         val refs = articles.map { it.data }
-            .flatMap { res -> res.tags.map { res.id to it } }
-//            .fold(mutableListOf<Pair<String, String>>()) { acc, res ->
-//                acc.also { list -> list.addAll(res.tags.map {res.id to it} ) }
-//            }
+//            .flatMap { res -> res.tags.map { res.id to it } }
+            .fold(mutableListOf<Pair<String, String>>()) { acc, res ->
+                acc.also { list -> list.addAll(res.tags.map {res.id to it} ) }
+            }
 
         val tags = refs.map { it.second }
             .distinct()
@@ -64,6 +61,9 @@ object ArticlesRepository : IArticlesRepository {
 
     override fun findCategoriesData(): LiveData<List<CategoryData>> =
         categoriesDao.findAllCategoriesData()
+
+    fun findPersonalData(): LiveData<List<ArticlePersonalInfo>> =
+        articlePersonalDao.findPersonalInfos()
 
     override fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem> =
         articlesDao.findArticlesByRaw(SimpleSQLiteQuery(filter.toQuery()))
@@ -92,6 +92,7 @@ class ArticleFilter(
             qb.appendWhere("is_bookmark = 1")
         if (categories.isNotEmpty())
             qb.appendWhere("category_id IN (${categories.joinToString(",")})")
+        qb.orderBy("date")
         qb.orderBy("date")
         return  qb.build()
     }

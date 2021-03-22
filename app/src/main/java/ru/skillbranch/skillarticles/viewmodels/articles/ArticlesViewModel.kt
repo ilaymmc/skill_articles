@@ -95,7 +95,7 @@ class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>
                 start = articleItem.id.toInt().inc(),
                 size = listConfig.pageSize)
             if (items.isNotEmpty()) {
-                repository.insertArticlesToDd(items)
+                repository.insertArticlesToDb(items)
                 Log.e("ArticlesViewModel", "invalidate new ${items.size}")
                 listData.value?.dataSource?.invalidate()
             }
@@ -114,7 +114,7 @@ class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>
         viewModelScope.launch(Dispatchers.IO) {
             val items = repository.loadArticlesFromNetwork(0, listConfig.initialLoadSizeHint)
             if (items.isNotEmpty()) {
-                repository.insertArticlesToDd(items)
+                repository.insertArticlesToDb(items)
                 Log.e("ArticlesViewModel", "invalidate new ${items.size}")
                 listData.value?.dataSource?.invalidate()
             }

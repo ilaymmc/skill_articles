@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.preference.PreferenceManager
 import ru.skillbranch.skillarticles.App
 import ru.skillbranch.skillarticles.data.delegates.PrefDelegate
@@ -20,19 +21,45 @@ object PrefManager {
         PreferenceManager.getDefaultSharedPreferences(App.applicationContext())
     }
 
-//    var isDarkMode by PrefDelegate(false)
+    var isDarkMode by PrefDelegate(false)
+    var isBigText by PrefDelegate(false)
 
-//    var storedBoolean by PrefDelegate(false)
+    private val settings : MutableLiveData<AppSettings> = MutableLiveData(AppSettings()).apply {
+        observeForever {
+            isDarkMode = it.isDarkMode
+            isBigText = it.isBigText
+        }
+    }
+    private val isAuthorized : MutableLiveData<Boolean> = MutableLiveData(false)
+
+    init {
+        reloadAll()
+    }
+
+
+    //    var storedBoolean by PrefDelegate(false)
 //    var storedString by PrefDelegate("")
 //    var storedInt by PrefDelegate(Int.MAX_VALUE)
 //
     fun clearAll() {
         preferences.edit().clear().apply()
+        reloadAll()
     }
 
-    // TODO implements it
-    fun getAppSettings(): LiveData<AppSettings> = MutableLiveData(AppSettings())
-    fun isAuth(): MutableLiveData<Boolean>  = MutableLiveData(false)
+    private fun reloadAll() {
+        settings.value = AppSettings(
+            isDarkMode = isDarkMode,
+            isBigText = isBigText
+        )
+    }
+
+    fun getAppSettings(): LiveData<AppSettings> = settings
+
+    fun setAppSettings(newSettings: AppSettings) {
+        settings.value = newSettings
+    }
+    fun isAuth(): MutableLiveData<Boolean>  = isAuthorized
     fun setAuth(auth: Boolean): Unit {
+        isAuthorized.value = auth
     }
 }
