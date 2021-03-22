@@ -35,6 +35,9 @@ class MarkdownBuilder(context: Context) {
         setTint(colorSecondary)
     }
 
+    fun getInlineCodeSpan() = InlineCodeSpan(colorOnSurface, opacityColorSurface, cornerRadius, gap)
+    fun getIconLinkSpan() = IconLinkSpan(linkDrawable, gap, colorPrimary, strikeWidth)
+
     fun markdownToSpan(textContent: MarkdownElement.Text) : SpannedString {
         return buildSpannedString {
             textContent.elements.forEach {

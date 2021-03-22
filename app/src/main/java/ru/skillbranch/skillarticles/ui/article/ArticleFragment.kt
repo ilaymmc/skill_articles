@@ -6,6 +6,8 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
+import android.text.Spannable
+import android.text.SpannableString
 import android.util.Log
 import android.view.*
 import android.widget.TextView
@@ -43,6 +45,9 @@ import ru.skillbranch.skillarticles.ui.base.*
 import ru.skillbranch.skillarticles.ui.custom.ArticleSubmenu
 import ru.skillbranch.skillarticles.ui.custom.Bottombar
 import ru.skillbranch.skillarticles.ui.custom.ShimmerDrawable
+import ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownBuilder
+import ru.skillbranch.skillarticles.ui.custom.spans.IconLinkSpan
+import ru.skillbranch.skillarticles.ui.custom.spans.InlineCodeSpan
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
@@ -63,6 +68,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             et_comment.context.showKeyboard(et_comment)
         }
     }
+
+    private lateinit var inlineCodeSpan: InlineCodeSpan
+    private lateinit var iconLinkSpan: IconLinkSpan
 
     override val viewModel: ArticleViewModel by viewModels {
         ViewModelFactory(
@@ -102,6 +110,10 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         get() = root.findViewById<ArticleSubmenu>(R.id.submenu)
 
     override fun setupViews() {
+        context?.let { MarkdownBuilder(it).also { mb ->
+            inlineCodeSpan = mb.getInlineCodeSpan()
+            iconLinkSpan = mb.getIconLinkSpan()
+        }}
         root.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         setupBottombar()
         setupSubmenu()
@@ -397,10 +409,25 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             }
         }
         private var hashtags: List<String> by RenderProp(emptyList()) {
-            tv_hashtags.text = it.joinToString(",")
+            val text = it.joinToString(",")
+            if (text.isNotEmpty()) {
+                val ss = SpannableString(text)
+                ss.setSpan(inlineCodeSpan, 0, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                tv_hashtags.setText(ss, TextView.BufferType.SPANNABLE)
+            } else {
+                tv_hashtags.text = ""
+            }
+//            tv_hashtags.text = it.joinToString(",")
         }
         private var source: String by RenderProp("") {
-            tv_source.text = it ?: ""
+            val text = it
+            if (text.isNotEmpty()) {
+                val ss = SpannableString(text)
+                ss.setSpan(iconLinkSpan, 0, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                tv_source.setText(ss, TextView.BufferType.SPANNABLE)
+            } else {
+                tv_source.text = ""
+            }
         }
 
         override val afterInflate: (() -> Unit)? = {
