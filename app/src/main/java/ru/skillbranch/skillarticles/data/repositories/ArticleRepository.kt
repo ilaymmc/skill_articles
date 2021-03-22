@@ -45,14 +45,14 @@ object ArticleRepository : IArticleRepository {
     fun setupTestDao (
         articlesDao : ArticlesDao? = null,
         articleCountsDao: ArticleCountsDao? = null,
-        articleContentsDao: ArticleContentsDao? = null,
+        articleContentDao: ArticleContentsDao? = null,
         articlePersonalDao: ArticlePersonalInfosDao? = null,
         categoriesDao: CategoriesDao? = null,
         tagsDao: TagsDao? = null
     ) {
         articlesDao?.let { this.articlesDao = it }
         articleCountsDao?.let { this.articleCountsDao = it }
-        articleContentsDao?.let { this.articleContentsDao = it }
+        articleContentDao?.let { this.articleContentsDao = it }
         articlePersonalDao?.let { this.articlePersonalDao = it }
         categoriesDao?.let { this.categoriesDao = it }
         tagsDao?.let { this.tagsDao = it }
