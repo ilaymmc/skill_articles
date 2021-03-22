@@ -241,7 +241,9 @@ data class ArticleState(
     val answerTo: String? = null,
     val answerToSlug : String? = null,
     val showBottomBar: Boolean = true,
-    val commentText : String? = null
+    val commentText : String? = null,
+    val tags: List<String> = emptyList(),
+    val source: String? = null
 ) : IViewModelState {
     override fun save(outState: SavedStateHandle) {
         outState.set("answerTo", answerTo)

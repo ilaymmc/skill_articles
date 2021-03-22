@@ -396,6 +396,12 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
                 setupCopyListener()
             }
         }
+        private var hashtags: List<String> by RenderProp(emptyList()) {
+            tv_hashtags.text = it.joinToString(",")
+        }
+        private var source: String by RenderProp("") {
+            tv_source.text = it ?: ""
+        }
 
         override val afterInflate: (() -> Unit)? = {
             dependsOn<Boolean, Boolean, List<Pair<Int, Int>>, Int>(
@@ -426,7 +432,11 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             isBigText = data.isBigText
             isDarkMode = data.isDarkMode
 
+
             content = data.content
+            hashtags = data.tags
+            source = data.source ?: ""
+
             isLoadingContent = data.isLoadingContent
             isSearch = data.isSearch
             searchQuery = data.searchQuery
