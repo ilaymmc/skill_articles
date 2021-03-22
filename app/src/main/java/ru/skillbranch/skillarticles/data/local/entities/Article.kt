@@ -98,19 +98,21 @@ data class ArticleFull(
     val date: Date,
     val content: List<MarkdownElement>? = null,
     val source: String? = null
-    ,@Relation(
-        parentColumn = "id",
-        entityColumn = "tag",
-        entity = Tag::class,
-        associateBy = Junction(
-            value = ArticleTagXRef::class,
-            parentColumn = "a_id",
-            entityColumn = "t_id"
-        ))
 //    ,@Relation(
+//        entity = Tag::class,
 //        parentColumn = "id",
-//        entityColumn = "a_id",
-//        entity = ArticleTagXRef::class
-//    )
+//        entityColumn = "tag",
+//        projection = ["tag"],
+//        associateBy = Junction(
+//            value = ArticleTagXRef::class,
+//            parentColumn = "a_id",
+//            entityColumn = "t_id"
+//        ))
+    ,@Relation(
+        entity = ArticleTagXRef::class,
+        parentColumn = "id",
+        entityColumn = "a_id",
+        projection = ["t_id"]
+    )
     val tags: List<String> = emptyList()
 )
