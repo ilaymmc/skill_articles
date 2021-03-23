@@ -1,19 +1,12 @@
 package ru.skillbranch.skillarticles.ui.dialogs
 
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
-import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
-import java.util.*
 
 class ChoseCategoryDialog : DialogFragment() {
     private val viewModel: ArticlesViewModel by activityViewModels()

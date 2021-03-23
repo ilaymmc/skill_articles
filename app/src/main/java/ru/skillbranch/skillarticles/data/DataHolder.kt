@@ -27,9 +27,9 @@ object NetworkDataHolder {
     fun findArticlesItem(start: Int = 0, size: Int): List<ArticleRes> {
         return networkArticleItems.drop(start)
             .take(size)
-            .apply {
-                sleep(100)
-            }
+//            .apply {
+//                sleep(100)
+//            }
     }
 
     fun loadArticleContent(articleId: String): ArticleContentRes =
