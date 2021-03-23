@@ -409,7 +409,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             }
         }
         private var hashtags: List<String> by RenderProp(emptyList()) {
-            val text = it.joinToString(",")
+            val text = it.joinToString(" ")
             if (text.isNotEmpty()) {
                 val ss = SpannableString(text)
                 ss.setSpan(inlineCodeSpan, 0, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
