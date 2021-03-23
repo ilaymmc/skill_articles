@@ -420,7 +420,8 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 //            tv_hashtags.text = it.joinToString(",")
         }
         private var source: String by RenderProp("") {
-            val text = it
+            val text = "Article source"
+//            val text = it
             if (text.isNotEmpty()) {
                 val ss = SpannableString(text)
                 ss.setSpan(iconLinkSpan, 0, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
