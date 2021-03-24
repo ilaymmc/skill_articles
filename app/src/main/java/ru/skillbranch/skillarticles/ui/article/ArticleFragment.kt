@@ -1,22 +1,23 @@
 package ru.skillbranch.skillarticles.ui.article
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
+import android.content.*
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.provider.Browser
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.style.URLSpan
 import android.util.Log
 import android.view.*
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
+import androidx.core.text.inSpans
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -27,17 +28,12 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import com.bumptech.glide.request.target.Target
-
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_article.*
 import kotlinx.android.synthetic.main.fragment_article.view.*
 import kotlinx.android.synthetic.main.layout_bottombar.view.*
 import kotlinx.android.synthetic.main.layout_submenu.view.*
 import kotlinx.android.synthetic.main.search_view_layout.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.*
@@ -52,9 +48,7 @@ import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
-import ru.skillbranch.skillarticles.viewmodels.base.Notify
 import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
-import java.lang.Thread.sleep
 
 class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     private val args : ArticleFragmentArgs by navArgs()
@@ -271,11 +265,12 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         }
 
         menuItem.run {
-            setOnActionExpandListener(object: MenuItem.OnActionExpandListener {
+            setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                     viewModel.handleSearchModel(true)
                     return true
                 }
+
                 override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
                     viewModel.handleSearchModel(false)
                     return true
@@ -419,13 +414,33 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             }
 //            tv_hashtags.text = it.joinToString(",")
         }
-        private var source: String by RenderProp("") {
+        private var source: String by RenderProp("") { url ->
             val text = "Article source"
 //            val text = it
             if (text.isNotEmpty()) {
-                val ss = SpannableString(text)
-                ss.setSpan(iconLinkSpan, 0, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                val ss = SpannableStringBuilder().apply {
+                    inSpans(
+                        iconLinkSpan,
+                        URLSpan(url)
+                    ) {
+                        append(text)
+                    }
+                }
+
+//                val ss = SpannableString(text)
+//                ss.setSpan(iconLinkSpan, 0, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 tv_source.setText(ss, TextView.BufferType.SPANNABLE)
+                tv_source.setOnClickListener { view ->
+                    val uri = Uri.parse(url)
+                    val context: Context = view.context
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.packageName)
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: ActivityNotFoundException) {
+                    }
+                }
+
             } else {
                 tv_source.text = ""
             }
@@ -437,8 +452,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
                 ::isSearch,
                 ::searchResults,
                 ::searchPosition
-            ) {
-                ilc, iss, sr, sp ->
+            ) { ilc, iss, sr, sp ->
                 if (!ilc) {
                     if (iss) {
                         tv_text_content.renderSearchResult(sr)
