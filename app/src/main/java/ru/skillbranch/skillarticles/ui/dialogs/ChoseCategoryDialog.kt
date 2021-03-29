@@ -72,13 +72,20 @@ class ChooseCategoryDialog : DialogFragment() {
     private val selectedCategories = mutableListOf<String>()
     private val args: ChooseCategoryDialogArgs by navArgs()
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-         // TODO save checked state and implements custom items
-        val categories = args.categories.toList()
-        val checked = BooleanArray(categories.size) {
-            args.selectedCategories.contains(categories[it].categoryId)
-        }
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putStringArray("selectedCategories", selectedCategories.toTypedArray())
+        super.onSaveInstanceState(outState)
+    }
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val savedSelection = savedInstanceState?.getStringArray("selectedCategories")
+        (savedSelection ?: args.selectedCategories).map {
+            selectedCategories.add(it)
+        }
+        val categories = args.categories
+        val checked = BooleanArray(categories.size) {
+            selectedCategories.contains(categories[it].categoryId)
+        }
         val categoriesAdapter = CategoriesAdapter(checked) { which, isChecked, _ ->
             checked[which] = isChecked
             if (isChecked) {
