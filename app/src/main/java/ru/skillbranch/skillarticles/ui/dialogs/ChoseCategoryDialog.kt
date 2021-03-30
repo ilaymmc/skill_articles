@@ -56,9 +56,6 @@ class ChoseCategoryDialog : DialogFragment() {
 }
 */
 
-
-
-
 //    Реализуй ChooseCategoryDialog отображающий список категорий (android:id="@+id/categories_list"),
 //    каждый элемент списка должен содержать CheckBox (android:id="@+id/ch_select"), иконку категории (android:id="@+id/iv_icon"),
 //    название категории (android:id="@+id/tv_category"), количество статей в категории (android:id="@+id/tv_count")
