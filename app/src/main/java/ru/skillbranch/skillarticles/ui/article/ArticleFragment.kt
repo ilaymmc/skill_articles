@@ -30,7 +30,6 @@ import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import com.bumptech.glide.request.target.Target
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_article.*
-import kotlinx.android.synthetic.main.fragment_article.view.*
 import kotlinx.android.synthetic.main.layout_bottombar.view.*
 import kotlinx.android.synthetic.main.layout_submenu.view.*
 import kotlinx.android.synthetic.main.search_view_layout.*
@@ -403,16 +402,18 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
                 setupCopyListener()
             }
         }
-        private var hashtags: List<String> by RenderProp(emptyList()) {
-            val text = it.joinToString(" ")
-            if (text.isNotEmpty()) {
-                val ss = SpannableString(text)
-                ss.setSpan(inlineCodeSpan, 0, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                tv_hashtags.setText(ss, TextView.BufferType.SPANNABLE)
+        private var hashtags: List<String> by RenderProp(emptyList()) { tags ->
+            if (tags.isNotEmpty() && context != null) {
+                val mb = MarkdownBuilder(context!!)
+                val sb = SpannableStringBuilder().apply {
+                    tags.forEach { tag ->
+                        append(tag, mb.getInlineCodeSpan(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                }
+                tv_hashtags.setText(sb,TextView.BufferType.SPANNABLE)
             } else {
                 tv_hashtags.text = ""
             }
-//            tv_hashtags.text = it.joinToString(",")
         }
         private var source: String by RenderProp("") { url ->
             val text = "Article source"
@@ -440,7 +441,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
                     } catch (e: ActivityNotFoundException) {
                     }
                 }
-
             } else {
                 tv_source.text = ""
             }
