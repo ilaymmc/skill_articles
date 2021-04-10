@@ -406,8 +406,12 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             if (tags.isNotEmpty() && context != null) {
                 val mb = MarkdownBuilder(context!!)
                 val sb = SpannableStringBuilder().apply {
+                    var isFirst = true
                     tags.forEach { tag ->
+                        if (!isFirst)
+                            append(" ")
                         append(tag, mb.getInlineCodeSpan(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        isFirst = false
                     }
                 }
                 tv_hashtags.setText(sb,TextView.BufferType.SPANNABLE)

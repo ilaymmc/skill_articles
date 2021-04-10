@@ -2,12 +2,11 @@ package ru.skillbranch.skillarticles.data.local
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
 import ru.skillbranch.skillarticles.App
 import ru.skillbranch.skillarticles.data.delegates.PrefDelegate
+import ru.skillbranch.skillarticles.data.delegates.PrefLiveDelegate
 import ru.skillbranch.skillarticles.data.models.AppSettings
 
 // Реализуй в классе PrefManager(context:Context) (ru.skillbranch.skillarticles.data.local.PrefManager)
@@ -23,43 +22,34 @@ object PrefManager {
 
     var isDarkMode by PrefDelegate(false)
     var isBigText by PrefDelegate(false)
+    var isAuth by PrefDelegate(false)
+    val isAuthLive: LiveData<Boolean> by PrefLiveDelegate("isAuth", false, preferences)
 
-    private val settings : MutableLiveData<AppSettings> = MutableLiveData(AppSettings()).apply {
-        observeForever {
-            isDarkMode = it.isDarkMode
-            isBigText = it.isBigText
+    val appSettings = MediatorLiveData<AppSettings>().apply {
+        val isDarkModeLive: LiveData<Boolean> by PrefLiveDelegate("isDarkMode", false, preferences)
+        val isBigTextLive: LiveData<Boolean> by PrefLiveDelegate("isBigText", false, preferences)
+        value = AppSettings()
+
+        addSource(isDarkModeLive) {
+            value = value!!.copy(isDarkMode = it)
         }
-    }
-    private val isAuthorized : MutableLiveData<Boolean> = MutableLiveData(false)
 
-    init {
-        reloadAll()
-    }
+        addSource(isBigTextLive) {
+            value = value!!.copy(isBigText = it)
+        }
+    } .distinctUntilChanged()
 
-
-    //    var storedBoolean by PrefDelegate(false)
-//    var storedString by PrefDelegate("")
-//    var storedInt by PrefDelegate(Int.MAX_VALUE)
-//
     fun clearAll() {
         preferences.edit().clear().apply()
-        reloadAll()
     }
 
-    private fun reloadAll() {
-        settings.value = AppSettings(
-            isDarkMode = isDarkMode,
-            isBigText = isBigText
-        )
-    }
+//    fun getAppSettings(): LiveData<AppSettings> = settings
 
-    fun getAppSettings(): LiveData<AppSettings> = settings
-
-    fun setAppSettings(newSettings: AppSettings) {
-        settings.value = newSettings
-    }
-    fun isAuth(): MutableLiveData<Boolean>  = isAuthorized
-    fun setAuth(auth: Boolean): Unit {
-        isAuthorized.value = auth
-    }
+//    fun setAppSettings(newSettings: AppSettings) {
+//        settings.value = newSettings
+//    }
+//    fun isAuth(): MutableLiveData<Boolean>  = isAuthorized
+//    fun setAuth(auth: Boolean): Unit {
+//        isAuthorized.value = auth
+//    }
 }

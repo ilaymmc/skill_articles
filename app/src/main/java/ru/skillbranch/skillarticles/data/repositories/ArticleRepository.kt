@@ -20,7 +20,7 @@ interface IArticleRepository {
     fun getAppSettings(): LiveData<AppSettings>
     fun toggleLike(articleId: String)
     fun toggleBookmark(articleId: String)
-    fun isAuth(): MutableLiveData<Boolean>
+    fun isAuth(): LiveData<Boolean>
     fun loadCommentsByRange(slug: String?, size: Int, articleId: String): List<CommentItemData>
     fun sendMessage(articleId: String, comment: String, answerToSlug: String?)
     fun loadAllComments(articleId: String, totalCount: Int): CommentsDataFactory
@@ -57,9 +57,10 @@ object ArticleRepository : IArticleRepository {
         return articlesDao.findFullArticle(articleId)
     }
 
-    override fun getAppSettings(): LiveData<AppSettings> = preferences.getAppSettings() //from preferences
+    override fun getAppSettings(): LiveData<AppSettings> = preferences.appSettings //from preferences
     override fun updateSettings(copy: AppSettings) {
-        preferences.setAppSettings(copy)
+        preferences.isBigText = copy.isBigText
+        preferences.isDarkMode = copy.isDarkMode
     }
     override fun toggleLike(articleId: String) {
         articlePersonalDao.toggleLikeOrInsert(articleId)
@@ -84,7 +85,7 @@ object ArticleRepository : IArticleRepository {
         articlePersonalDao.update(info)
     }
 
-    override fun isAuth(): MutableLiveData<Boolean> = preferences.isAuth()
+    override fun isAuth(): LiveData<Boolean> = preferences.isAuthLive
     override fun loadAllComments(articleId: String, totalCount: Int) =
         CommentsDataFactory(
             itemProvider = ::loadCommentsByRange,

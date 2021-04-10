@@ -144,6 +144,7 @@ class CategoryVH(override val containerView: View):
 
     fun bind(item: CategoryData?, isChecked: Boolean, listener: (Boolean, CategoryData) -> Unit) {
         if (item != null) {
+            ch_select.setOnCheckedChangeListener(null)
             Glide.with(containerView)
                 .load(item.icon)
                 .transform(CenterCrop(), RoundedCorners(cornerRadius))
@@ -155,6 +156,7 @@ class CategoryVH(override val containerView: View):
             ch_select.setOnCheckedChangeListener { _, checked ->
                 listener.invoke(checked, item)
             }
+            itemView.setOnClickListener { ch_select.toggle() }
         }
     }
 }
@@ -164,5 +166,4 @@ class CategoryDiffCallback: DiffUtil.ItemCallback<CategoryData>(){
         oldItem.categoryId == newItem.categoryId
     override fun areContentsTheSame(oldItem: CategoryData, newItem: CategoryData): Boolean =
         oldItem == newItem
-
 }
