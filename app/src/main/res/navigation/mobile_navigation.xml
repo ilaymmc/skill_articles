@@ -7,7 +7,7 @@
     <fragment
         android:id="@+id/page_article"
         android:name="ru.skillbranch.skillarticles.ui.article.ArticleFragment"
-        android:label="Article">
+        android:label="{title}">
         <argument
             android:name="article_id"
             app:argType="string" />

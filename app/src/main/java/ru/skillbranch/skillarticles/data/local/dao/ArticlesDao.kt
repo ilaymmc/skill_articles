@@ -12,7 +12,7 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 interface ArticlesDao : BaseDao<Article> {
 
     @Transaction
-    fun upsert(list : List<Article>) {
+    suspend fun upsert(list : List<Article>) {
         insert(list)
             .mapIndexed { index, recordResult ->
                 if (recordResult == -1L) list[index] else null
@@ -40,7 +40,7 @@ interface ArticlesDao : BaseDao<Article> {
     fun findArticleItems(): LiveData<List<ArticleItem>>
 
     @Delete
-    fun delete(article: Article)
+    suspend fun delete(article: Article)
 
     @Query("""
         SELECT * FROM ArticleItem
@@ -60,11 +60,9 @@ interface ArticlesDao : BaseDao<Article> {
     @RawQuery(observedEntities = [ArticleItem::class])
     fun findArticlesByRaw(simpleSQLiteQuery: SimpleSQLiteQuery): DataSource.Factory<Int, ArticleItem>
 
-
     @Query("""
         SELECT * FROM ArticleFull
         WHERE id = :articleId
     """)
     fun findFullArticle(articleId: String): LiveData<ArticleFull>
-
 }

@@ -105,16 +105,10 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
 }
 
 class ToolbarBuilder {
-    var title: String? = null
     var subtitle: String? = null
     var logo: String? = null
     var visability: Boolean = true
     val items: MutableList<MenuItemHolder> = mutableListOf()
-
-    fun setTitle(title: String) : ToolbarBuilder {
-        this.title = title
-        return this
-    }
 
     fun setSubtitle(subtitle: String) : ToolbarBuilder {
         this.subtitle = subtitle
@@ -137,7 +131,6 @@ class ToolbarBuilder {
     }
 
     fun invalidate() : ToolbarBuilder {
-        title = null
         subtitle = null
         logo = null
         visability = true
@@ -155,7 +148,6 @@ class ToolbarBuilder {
         context.appbar.setExpanded(true, true)
 
         with(context.toolbar) {
-            this@ToolbarBuilder.title?.let { title = it }
             subtitle = this@ToolbarBuilder.subtitle
             if (this@ToolbarBuilder.logo != null) {
                 val logoSize = context.dpToIntPx(40)

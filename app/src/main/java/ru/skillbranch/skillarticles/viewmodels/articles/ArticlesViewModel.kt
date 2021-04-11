@@ -19,6 +19,8 @@ import java.util.concurrent.Executors
 
 class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>(handle, ArticlesState()) {
     private val repository = ArticlesRepository
+    private var isLoadingInitial = false
+    private var isLoadingAfter = false
     private val listConfig by lazy {
         PagedList.Config.Builder()
             .setEnablePlaceholders(false)
@@ -82,47 +84,31 @@ class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>
         currentState.run { searchQuery.isNullOrEmpty() && !isBookmark &&
                 selectedCategories.isEmpty() && !isHashTagSearch}
 
-    private var isLoading = false
-
-    private fun itemAtEndHandler(articleItem: ArticleItem) {
-        Log.e("ArticlesViewModel", "itemAtEndHandler(${articleItem.id})")
-        if (isLoading)
+    private fun itemAtEndHandler(lastLoadArticle: ArticleItem) {
+        Log.e("ArticlesViewModel", "itemAtEndHandler(${lastLoadArticle.id})")
+        if (isLoadingAfter)
             return
-//        notify(Notify.TextMessage("End reached"))
-        viewModelScope.launch(Dispatchers.IO) {
-            isLoading = true
-            val items = repository.loadArticlesFromNetwork(
-                start = articleItem.id.toInt().inc(),
-                size = listConfig.pageSize)
-            if (items.isNotEmpty()) {
-                repository.insertArticlesToDb(items)
-                Log.e("ArticlesViewModel", "invalidate new ${items.size}")
-                listData.value?.dataSource?.invalidate()
-            }
-            isLoading = false
-
-//            withContext(Dispatchers.Main) {
-//                notify(Notify.TextMessage("Load from network articles from ${items.firstOrNull()?.id} " +
-//                        "to ${items.lastOrNull()?.id}"))
-//            }
-        }
+        isLoadingAfter = true
+        viewModelScope.launch {
+            repository.loadArticlesFromNetwork(
+                start = lastLoadArticle.id,
+                size = listConfig.pageSize
+            )
+        } .invokeOnCompletion { isLoadingAfter = false }
     }
 
     private fun zeroLoadingHandler() {
         Log.e("ArticlesViewModel", "zeroLoadingHandler()")
         notify(Notify.TextMessage("Storage is empty"))
-        viewModelScope.launch(Dispatchers.IO) {
-            val items = repository.loadArticlesFromNetwork(0, listConfig.initialLoadSizeHint)
-            if (items.isNotEmpty()) {
-                repository.insertArticlesToDb(items)
-                Log.e("ArticlesViewModel", "invalidate new ${items.size}")
-                listData.value?.dataSource?.invalidate()
-            }
-            withContext(Dispatchers.Main) {
-                notify(Notify.TextMessage("Load from network articles from ${items.firstOrNull()?.data?.id} " +
-                        "to ${items.lastOrNull()?.data?.id}"))
-            }
-        }
+        if (isLoadingInitial)
+            return
+        isLoadingInitial = true
+        viewModelScope.launch {
+            repository.loadArticlesFromNetwork(
+                start = null,
+                size = listConfig.initialLoadSizeHint
+            )
+        } .invokeOnCompletion { isLoadingAfter = false }
     }
 
     fun handleSearchMode(isSearch: Boolean) {
