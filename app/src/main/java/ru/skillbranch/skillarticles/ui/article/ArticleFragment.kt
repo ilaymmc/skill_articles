@@ -421,7 +421,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         }
         private var source: String by RenderProp("") { url ->
             val text = "Article source"
-//            val text = it
             if (text.isNotEmpty()) {
                 val ss = SpannableStringBuilder().apply {
                     inSpans(
@@ -432,8 +431,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
                     }
                 }
 
-//                val ss = SpannableString(text)
-//                ss.setSpan(iconLinkSpan, 0, text.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 tv_source.setText(ss, TextView.BufferType.SPANNABLE)
                 tv_source.setOnClickListener { view ->
                     val uri = Uri.parse(url)

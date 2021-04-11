@@ -1,8 +1,6 @@
 package ru.skillbranch.skillarticles.data.local
 
 import androidx.room.TypeConverter
-import ru.skillbranch.skillarticles.data.local.entities.ArticleTagXRef
-import ru.skillbranch.skillarticles.data.local.entities.Tag
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.data.repositories.MarkdownParser
 import java.util.Date
@@ -17,7 +15,13 @@ class DateConverter {
 
 class MarkdownConverter {
     @TypeConverter
-    fun toMarkdown(content: String?): List<MarkdownElement>? = content?.let { MarkdownParser.parse(it) }
+    fun toMarkdown(content: String?): List<MarkdownElement>? =
+        content?.let { MarkdownParser.parse(it) }
+}
+
+class ListConverter {
+    @TypeConverter
+    fun toList(list: String?): List<String> = list?.split(",") ?: emptyList()
 }
 
 //class TagConverter {
