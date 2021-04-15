@@ -12,7 +12,7 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 interface ArticlesDao : BaseDao<Article> {
 
     @Transaction
-    suspend fun upsert(list : List<Article>) {
+    suspend fun upsert(list: List<Article>) {
         insert(list)
             .mapIndexed { index, recordResult ->
                 if (recordResult == -1L) list[index] else null
@@ -23,29 +23,37 @@ interface ArticlesDao : BaseDao<Article> {
             }
     }
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM articles
-    """)
+    """
+    )
     fun findArticles(): LiveData<List<Article>>
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM articles
         WHERE id = :id
-    """)
+    """
+    )
     fun findArticleById(id: String): LiveData<Article>
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM ArticleItem
-    """)
+    """
+    )
     fun findArticleItems(): LiveData<List<ArticleItem>>
 
     @Delete
     suspend fun delete(article: Article)
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM ArticleItem
         WHERE category_id in (:categoryIds)
-    """)
+    """
+    )
     fun findArticleItemsByCategoryIds(categoryIds: List<String>): LiveData<List<ArticleItem>>
 
     @Query(
@@ -60,9 +68,18 @@ interface ArticlesDao : BaseDao<Article> {
     @RawQuery(observedEntities = [ArticleItem::class])
     fun findArticlesByRaw(simpleSQLiteQuery: SimpleSQLiteQuery): DataSource.Factory<Int, ArticleItem>
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM ArticleFull
         WHERE id = :articleId
-    """)
+    """
+    )
     fun findFullArticle(articleId: String): LiveData<ArticleFull>
+
+    @Query(
+        """
+        SELECT id FROM articles ORDER BY date LIMIT 1
+    """
+    )
+    fun findLastArticleId(): String?
 }

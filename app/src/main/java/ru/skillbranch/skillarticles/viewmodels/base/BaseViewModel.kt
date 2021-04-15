@@ -6,6 +6,8 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.*
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigator
+import kotlinx.coroutines.*
+import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
 
 abstract class BaseViewModel<T : IViewModelState>(
     private val handleState: SavedStateHandle,
@@ -14,6 +16,8 @@ abstract class BaseViewModel<T : IViewModelState>(
     val notifications = MutableLiveData<Event<Notify>>()
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val navigation = MutableLiveData<Event<NavigationCommand>>()
+
+    val loading = MutableLiveData<Loading>(Loading.HIDE_LOADING)
 
     /***
      * Инициализация начального состояния аргументом конструктоа, и объявления состояния как
@@ -54,6 +58,14 @@ abstract class BaseViewModel<T : IViewModelState>(
             Event(content)
     }
 
+    protected fun showLoading(loadingType: Loading = Loading.SHOW_LOADING) {
+        loading.value = loadingType
+    }
+
+    protected fun hideLoading() {
+        loading.value = Loading.HIDE_LOADING
+    }
+
     @UiThread
     open fun navigate(command: NavigationCommand) {
         navigation.value =
@@ -66,6 +78,11 @@ abstract class BaseViewModel<T : IViewModelState>(
      */
     fun observeState(owner: LifecycleOwner, onChanged: (newState: T) -> Unit) {
         state.observe(owner, Observer { onChanged(it!!) })
+    }
+
+    fun observeLoading(owner: LifecycleOwner, onLoadingChanged: (state: Loading) -> Unit) {
+//        loading.observe(owner, Observer { onLoadingChanged(it!!) } )
+        loading.observe(owner, Observer(onLoadingChanged) )
     }
 
     /***
@@ -112,6 +129,29 @@ abstract class BaseViewModel<T : IViewModelState>(
         if (restoredState == currentState)
             return
         state.value = restoredState
+    }
+
+    protected fun launchSafety(
+        errHandler: ((Throwable) -> Unit)? = null,
+        compHandler: ((Throwable?) -> Unit)? = null,
+        block: suspend CoroutineScope.() -> Unit
+    ) {
+        val errHand = CoroutineExceptionHandler { _, throwable ->
+            errHandler?.invoke(throwable) ?: when(throwable) {
+                is NoNetworkError -> notify(Notify.TextMessage("Network not available, check internet connection"))
+                else -> notify(Notify.ErrorMessage(
+                    throwable.message ?: "Something is wrong"))
+            }
+        }
+
+        (viewModelScope + errHand).launch {
+            showLoading()
+            block.invoke(this)
+        }.invokeOnCompletion {
+            hideLoading()
+            compHandler?.invoke(it)
+        }
+
     }
 
 }
@@ -162,8 +202,8 @@ sealed class Notify {
 
     data class ErrorMessage(
         override val message: String,
-        val errLabel: String?,
-        val errHandler: (() -> Unit)?
+        val errLabel: String? = null,
+        val errHandler: (() -> Unit)? = null
     ) : Notify()
 }
 
@@ -181,4 +221,12 @@ sealed class NavigationCommand {
     data class FinishLogin(
         val privateDestination: Int? = null
     ) : NavigationCommand()
+}
+
+enum class Loading {
+    SHOW_LOADING,
+    SHOW_BLOCKING_LOADING,
+    HIDE_LOADING,
+
+
 }

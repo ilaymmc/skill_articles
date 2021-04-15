@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.viewmodels.articles
 
 import android.util.Log
+//import androidx.core.content.contentValuesOf
 import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -89,26 +90,29 @@ class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>
         if (isLoadingAfter)
             return
         isLoadingAfter = true
-        viewModelScope.launch {
-            repository.loadArticlesFromNetwork(
+        launchSafety( null, { isLoadingAfter = false }) {
+            val count = repository.loadArticlesFromNetwork(
                 start = lastLoadArticle.id,
                 size = listConfig.pageSize
             )
-        } .invokeOnCompletion { isLoadingAfter = false }
+            notify(Notify.TextMessage("Load $count items paged"))
+        }
     }
 
     private fun zeroLoadingHandler() {
         Log.e("ArticlesViewModel", "zeroLoadingHandler()")
-        notify(Notify.TextMessage("Storage is empty"))
         if (isLoadingInitial)
             return
         isLoadingInitial = true
-        viewModelScope.launch {
-            repository.loadArticlesFromNetwork(
+        notify(Notify.TextMessage("Storage is empty"))
+
+        launchSafety( null, { isLoadingInitial = false }) {
+            val count = repository.loadArticlesFromNetwork(
                 start = null,
                 size = listConfig.initialLoadSizeHint
             )
-        } .invokeOnCompletion { isLoadingAfter = false }
+            notify(Notify.TextMessage("Load $count items initial"))
+        }
     }
 
     fun handleSearchMode(isSearch: Boolean) {
@@ -134,6 +138,18 @@ class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>
 
     fun applyCategories(selectedCategories: List<String>) {
         updateState { it.copy(selectedCategories = selectedCategories) }
+    }
+
+    fun refresh() {
+        isLoadingInitial = true
+        launchSafety (null, { isLoadingInitial = false } ) {
+            val lastArticleId = repository.findLastArticleId()
+            val count = repository.loadArticlesFromNetwork(
+                start = lastArticleId,
+                size = if (lastArticleId == null) listConfig.initialLoadSizeHint else -listConfig.pageSize
+            )
+            notify(Notify.TextMessage("Load $count new articles"))
+        }
     }
 
 }

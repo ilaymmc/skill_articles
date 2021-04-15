@@ -9,10 +9,12 @@ import android.widget.AutoCompleteTextView
 import androidx.cursoradapter.widget.CursorAdapter
 import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.fragment_articles.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
@@ -22,6 +24,7 @@ import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesState
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.Loading
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 
 class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
@@ -61,6 +64,17 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
     override fun onDestroyView() {
         super.onDestroyView()
         viewModel.handleSearchMode(false)
+    }
+
+    override fun renderLoading(loadingState: Loading) {
+        when (loadingState) {
+            Loading.SHOW_LOADING -> if (!refresh.isRefreshing) root.progress.isVisible = true
+            Loading.SHOW_BLOCKING_LOADING -> root.progress.isVisible = false
+            Loading.HIDE_LOADING -> {
+                root.progress.isVisible = false
+                if (refresh.isRefreshing) refresh.isRefreshing = false
+            }
+        }
     }
 
     private var articlesAdapter = ArticlesAdapter (
@@ -105,6 +119,10 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
 
         viewModel.observeCategories(viewLifecycleOwner) {
             binding.categories = it
+        }
+
+        refresh.setOnRefreshListener {
+            viewModel.refresh()
         }
      }
 

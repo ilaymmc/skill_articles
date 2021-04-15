@@ -3,6 +3,8 @@ package ru.skillbranch.skillarticles.data.repositories
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.sqlite.db.SimpleSQLiteQuery
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import ru.skillbranch.skillarticles.data.local.DbManager.db
 import ru.skillbranch.skillarticles.data.local.dao.*
 import ru.skillbranch.skillarticles.data.local.entities.*
@@ -11,9 +13,10 @@ import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
 import ru.skillbranch.skillarticles.extensions.data.toArticle
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
 import ru.skillbranch.skillarticles.extensions.data.toCategory
+import kotlin.reflect.jvm.internal.impl.types.AbstractTypeCheckerContext
 
 interface IArticlesRepository {
-    suspend fun loadArticlesFromNetwork(start: String? = null, size: Int = 10)
+    suspend fun loadArticlesFromNetwork(start: String? = null, size: Int = 10) : Int
     suspend fun insertArticlesToDb(articles: List<ArticleRes>)
     suspend fun toggleBookmark(articleId: String)
     fun findTags() : LiveData<List<String>>
@@ -43,14 +46,14 @@ object ArticlesRepository : IArticlesRepository {
         tagsDao?.let { this.tagsDao = it }
         articlePersonalDao?.let { this.articlePersonalDao = it }
     }
-    override suspend fun loadArticlesFromNetwork(start: String?, size: Int) {
+    override suspend fun loadArticlesFromNetwork(start: String?, size: Int): Int = withContext(Dispatchers.IO) {
         val items = network.articles(start, size)
         if (items.isNotEmpty())
             insertArticlesToDb(items)
-
+        items.size
     }
 
-    override suspend fun insertArticlesToDb(articles: List<ArticleRes>) {
+    override suspend fun insertArticlesToDb(articles: List<ArticleRes>) = withContext(Dispatchers.IO) {
         articlesDao.upsert(articles.map { it.data.toArticle() })
         articleCountsDao.upsert(articles.map { it.counts.toArticleCounts() })
         val refs = articles.map { it.data }
@@ -68,7 +71,7 @@ object ArticlesRepository : IArticlesRepository {
         categoriesDao.insert(categories)
         tagsDao.insert(tags)
         tagsDao.insertRefs(refs.map { ArticleTagXRef(it.first, it.second) })
-
+        Unit
     }
 
     override suspend fun toggleBookmark(articleId: String) {
@@ -90,6 +93,8 @@ object ArticlesRepository : IArticlesRepository {
     override suspend fun incrementTagUseCount(tag: String) {
         tagsDao.incrementTagUseCount(tag)
     }
+
+    suspend fun findLastArticleId(): String? = withContext(Dispatchers.IO) { articlesDao.findLastArticleId() }
 }
 
 class ArticleFilter(
