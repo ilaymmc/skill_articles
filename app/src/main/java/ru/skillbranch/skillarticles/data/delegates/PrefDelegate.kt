@@ -3,6 +3,7 @@ package ru.skillbranch.skillarticles.data.delegates
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.lifecycle.LiveData
+import com.squareup.moshi.JsonAdapter
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import java.lang.IllegalArgumentException
 import kotlin.properties.ReadOnlyProperty
@@ -155,3 +156,75 @@ internal class SharedPreferencesLiveData<T>(
 //        }
 //    }
 //}
+
+
+class PrefObjDelegate<T>(
+    private val adapter: JsonAdapter<T>
+) {
+    private var storedValue : T? = null
+
+    operator fun provideDelegate(
+        thisRef: PrefManager,
+        property: KProperty<*>
+    ) : ReadWriteProperty<PrefManager, T?>  {
+        val key = property.name
+        return object : ReadWriteProperty<PrefManager, T?> {
+            override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
+                if (storedValue == null) {
+                    storedValue = thisRef.preferences.getString(key, null)
+                        ?.let { adapter.fromJson(it) }
+
+                }
+                return storedValue
+            }
+
+            override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
+                storedValue = value
+                with(thisRef.preferences.edit()) {
+                    putString(key, value?.let { adapter.toJson(it) })
+                    apply()
+                }
+            }
+        }
+    }
+}
+
+internal class SharedPreferencesLiveDataObj<T>(
+    var sharedPrefs: SharedPreferences,
+    var key: String,
+    private val adapter: JsonAdapter<T>
+) : LiveData<T?>() {
+
+    private val preferencesChangeListener =
+        SharedPreferences.OnSharedPreferenceChangeListener { _, shKey ->
+            if (shKey == key) {
+                value = sharedPrefs.getString(key, null)?.let { adapter.fromJson(it) }
+            }
+        }
+
+    override fun onActive() {
+        super.onActive()
+        value = sharedPrefs.getString(key, null)?.let { adapter.fromJson(it) }
+        sharedPrefs.registerOnSharedPreferenceChangeListener(preferencesChangeListener)
+    }
+
+    override fun onInactive() {
+        sharedPrefs.unregisterOnSharedPreferenceChangeListener(preferencesChangeListener)
+        super.onInactive()
+    }
+}
+
+class PrefLiveObjDelegate<T>(
+    private val fieldKey: String,
+    private val adapter: JsonAdapter<T>,
+    private val preferences: SharedPreferences
+) : ReadOnlyProperty<Any?, LiveData<T?>> {
+    private var storedValue: LiveData<T?>? = null
+    override fun getValue(thisRef: Any?, property: KProperty<*>): LiveData<T?> {
+        if (storedValue == null) {
+            storedValue = SharedPreferencesLiveDataObj(preferences, fieldKey, adapter)
+        }
+        return storedValue!!
+    }
+
+}

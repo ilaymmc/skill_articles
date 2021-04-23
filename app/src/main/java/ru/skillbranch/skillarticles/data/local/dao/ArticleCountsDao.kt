@@ -54,4 +54,18 @@ interface ArticleCountsDao : BaseDao<ArticleCounts> {
         WHERE article_id = :articleId 
     """)
     fun getCommentsCount(articleId: String) : LiveData<Int>
+
+
+    @Query("""
+        UPDATE article_counts SET comments = :comments, updated_at = CURRENT_TIMESTAMP
+        WHERE article_id = :articleId
+    """)
+    suspend fun updateCommentsCount(articleId: String, comments: Int)
+
+
+    @Query("""
+        UPDATE article_counts SET likes = :likeCount, updated_at = CURRENT_TIMESTAMP
+        WHERE article_id = :articleId
+    """)
+    fun updateLike(articleId: String, likeCount: Int)
 }

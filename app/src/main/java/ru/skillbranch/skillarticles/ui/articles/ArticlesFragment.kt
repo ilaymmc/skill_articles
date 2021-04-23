@@ -76,7 +76,6 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             }
         }
     }
-
     private var articlesAdapter = ArticlesAdapter (
         clickListener = { item ->
             val direction = ArticlesFragmentDirections.actionNavArticlesToPageArticle(

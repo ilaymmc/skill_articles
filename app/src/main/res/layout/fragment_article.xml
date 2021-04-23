@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--    На экране ArticleFragment - Необходимо добавить TextView (android:id="@+id/tv_hashtags") для отображения тегов статьи, теги стилизовать с помощью InlineCodeSpan-->
-<!--    На экране ArticleFragment - Необходимо добавить TextView (android:id="@+id/tv_source") для отображения источника статьи, стилизовать view с помощью IconLinkSpan текст в TextView должен быть Article source-->
-
-<androidx.core.widget.NestedScrollView
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/refresh"
+    >
+<androidx.core.widget.NestedScrollView
     android:id="@+id/scroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -171,3 +172,5 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.core.widget.NestedScrollView>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -29,7 +29,10 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import com.bumptech.glide.request.target.Target
 import com.google.android.material.appbar.AppBarLayout
+import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.fragment_article.*
+import kotlinx.android.synthetic.main.fragment_article.refresh
+import kotlinx.android.synthetic.main.fragment_articles.*
 import kotlinx.android.synthetic.main.layout_bottombar.view.*
 import kotlinx.android.synthetic.main.layout_submenu.view.*
 import kotlinx.android.synthetic.main.search_view_layout.*
@@ -47,6 +50,7 @@ import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.Loading
 import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
 class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
@@ -55,7 +59,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     private val commentsAdapter by lazy {
         CommentsAdapter {
             Log.e("ArticleFragment", "click on comment: ${it.id} ${it.slug}")
-            viewModel.handleReplyTo(it.slug, it.user.name)
+            viewModel.handleReplyTo(it.id, it.user.name)
             et_comment.requestFocus()
             scroll.smoothScrollTo(0, et_comment.top)
             et_comment.context.showKeyboard(et_comment)
@@ -205,6 +209,8 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         }
         et_comment.setOnFocusChangeListener { v, hasFocus -> viewModel.handleCommentFocus(hasFocus) }
 
+        refresh.setOnRefreshListener { viewModel.refresh() }
+
         wrap_comments.setEndIconOnClickListener { view ->
             view.context.hideKeyboard(view)
             viewModel.handleClearComment()
@@ -245,7 +251,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         bottombar.setSearchState(false)
         scroll.setMarginOptionally(bottom = 0)
     }
-
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
@@ -331,6 +336,19 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             viewModel.handleCopyCode()
         }
     }
+
+
+    override fun renderLoading(loadingState: Loading) {
+        when (loadingState) {
+            Loading.SHOW_LOADING -> if (!refresh.isRefreshing) root.progress.isVisible = true
+            Loading.SHOW_BLOCKING_LOADING -> root.progress.isVisible = false
+            Loading.HIDE_LOADING -> {
+                root.progress.isVisible = false
+                if (refresh.isRefreshing) refresh.isRefreshing = false
+            }
+        }
+    }
+
 
     //
     // BINDINGS
