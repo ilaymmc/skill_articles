@@ -35,14 +35,11 @@ object NetworkMonitor {
                 }
 
                 override fun onLost(network: Network) {
-                    isConnected = false
-                    isConnectedLive.postValue(false)
-                    networkTypeLive.postValue(NetworkType.NONE)
+                    setNetworkIsConnected(false)
                 }
 
                 override fun onAvailable(network: Network) {
-                    isConnected = true
-                    isConnectedLive.postValue(true)
+                    setNetworkIsConnected(true)
                 }
             }
 
@@ -54,6 +51,13 @@ object NetworkMonitor {
         networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
         networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
         else -> NetworkType.UNKNOWN
+    }
+
+    fun setNetworkIsConnected(connected: Boolean) {
+        isConnected = connected
+        isConnectedLive.postValue(isConnected)
+        if (!isConnected)
+            networkTypeLive.postValue(NetworkType.NONE)
     }
 
 }

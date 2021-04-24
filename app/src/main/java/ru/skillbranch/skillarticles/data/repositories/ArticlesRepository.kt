@@ -11,6 +11,7 @@ import ru.skillbranch.skillarticles.data.local.entities.*
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
 import ru.skillbranch.skillarticles.extensions.data.toArticle
+import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
 import ru.skillbranch.skillarticles.extensions.data.toCategory
 import kotlin.reflect.jvm.internal.impl.types.AbstractTypeCheckerContext
@@ -18,17 +19,20 @@ import kotlin.reflect.jvm.internal.impl.types.AbstractTypeCheckerContext
 interface IArticlesRepository {
     suspend fun loadArticlesFromNetwork(start: String? = null, size: Int = 10) : Int
     suspend fun insertArticlesToDb(articles: List<ArticleRes>)
-    suspend fun toggleBookmark(articleId: String)
+    suspend fun toggleBookmark(articleId: String) : Boolean
     fun findTags() : LiveData<List<String>>
     fun findCategoriesData() : LiveData<List<CategoryData>>
     fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem>
     suspend fun incrementTagUseCount(tag: String)
+    suspend fun fetchArticleContent(articleId: String)
+    suspend fun removeArticleContent(articleId: String)
 }
 
 object ArticlesRepository : IArticlesRepository {
     private val network = NetworkManager.api
     private var articlesDao = db.articlesDao()
     private var articleCountsDao = db.articleCountsDao()
+    private var articleContentsDao = db.articleContentsDao()
     private var categoriesDao = db.categoriesDao()
     private var tagsDao = db.tagsDao()
     private var articlePersonalDao = db.articlePersonalInfosDao()
@@ -38,13 +42,15 @@ object ArticlesRepository : IArticlesRepository {
         articleCountsDao: ArticleCountsDao? = null,
         categoriesDao: CategoriesDao? = null,
         tagsDao: TagsDao? = null,
-        articlePersonalDao: ArticlePersonalInfosDao? = null
+        articlePersonalDao: ArticlePersonalInfosDao? = null,
+        articleContentsDao: ArticleContentsDao? = null
     ) {
         articlesDao?.let { this.articlesDao = it }
         articleCountsDao?.let { this.articleCountsDao = it }
         categoriesDao?.let { this.categoriesDao = it }
         tagsDao?.let { this.tagsDao = it }
         articlePersonalDao?.let { this.articlePersonalDao = it }
+        articleContentsDao?.let { this.articleContentsDao = it }
     }
     override suspend fun loadArticlesFromNetwork(start: String?, size: Int): Int = withContext(Dispatchers.IO) {
         val items = network.articles(start, size)
@@ -74,9 +80,9 @@ object ArticlesRepository : IArticlesRepository {
         Unit
     }
 
-    override suspend fun toggleBookmark(articleId: String) {
+    override suspend fun toggleBookmark(articleId: String) : Boolean =
         articlePersonalDao.toggleBookmarkOrInsert(articleId)
-    }
+
 
     override fun findTags(): LiveData<List<String>> =
         tagsDao.findTags()
@@ -95,6 +101,16 @@ object ArticlesRepository : IArticlesRepository {
     }
 
     suspend fun findLastArticleId(): String? = withContext(Dispatchers.IO) { articlesDao.findLastArticleId() }
+
+    override suspend fun fetchArticleContent(articleId: String) {
+        val content = network.loadArticleContent(articleId)
+        articleContentsDao.insert(content.toArticleContent())
+    }
+
+    override suspend fun removeArticleContent(articleId: String) {
+        articleContentsDao.remove(articleId)
+    }
+
 }
 
 class ArticleFilter(

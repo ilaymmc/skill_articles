@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.data.repositories
 
+import android.accounts.NetworkErrorException
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.ItemKeyedDataSource
@@ -10,6 +11,8 @@ import ru.skillbranch.skillarticles.data.local.entities.*
 import ru.skillbranch.skillarticles.data.models.*
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.RestService
+import ru.skillbranch.skillarticles.data.remote.err.ApiError
+import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
 import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
@@ -18,7 +21,7 @@ import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 interface IArticleRepository {
     fun findArticle(articleId: String): LiveData<ArticleFull>
     fun getAppSettings(): LiveData<AppSettings>
-    suspend fun toggleLike(articleId: String)
+    suspend fun toggleLike(articleId: String) : Boolean
     suspend fun toggleBookmark(articleId: String)
     fun isAuth(): LiveData<Boolean>
     suspend fun sendMessage(articleId: String, comment: String, answerToMessage: String?)
@@ -28,6 +31,8 @@ interface IArticleRepository {
     fun updateSettings(copy: AppSettings)
     suspend fun fetchArticleContent(articleId: String)
     fun findArticleCommentCount(articleId: String): LiveData<Int>
+    suspend fun addBookmark(articleId: String)
+    suspend fun removeBookmark(articleId: String)
 }
 
 
@@ -61,9 +66,8 @@ object ArticleRepository : IArticleRepository {
         preferences.isBigText = copy.isBigText
         preferences.isDarkMode = copy.isDarkMode
     }
-    override suspend fun toggleLike(articleId: String) {
+    override suspend fun toggleLike(articleId: String) : Boolean =
         articlePersonalDao.toggleLikeOrInsert(articleId)
-    }
 
     override suspend fun toggleBookmark(articleId: String) {
         articlePersonalDao.toggleBookmarkOrInsert(articleId)
@@ -76,7 +80,6 @@ object ArticleRepository : IArticleRepository {
 
     override fun findArticleCommentCount(articleId: String): LiveData<Int> {
         return articleCountsDao.getCommentsCount(articleId)
-
     }
 
     suspend fun updateArticlePersonalInfo(info: ArticlePersonalInfo) {
@@ -101,8 +104,8 @@ object ArticleRepository : IArticleRepository {
             val res = network.decrementLike(articleId, preferences.accessToken)
             articleCountsDao.updateLike(articleId, res.likeCount)
         } catch (e: Throwable) {
-            articleCountsDao.decrementLike(articleId)
-
+            if (e !is ApiError)
+                articleCountsDao.decrementLike(articleId)
         }
     }
 
@@ -115,19 +118,46 @@ object ArticleRepository : IArticleRepository {
             val res = network.incrementLike(articleId, preferences.accessToken)
             articleCountsDao.updateLike(articleId, res.likeCount)
         } catch (e: Throwable) {
-            articleCountsDao.incrementLike(articleId)
+            if (e !is ApiError)
+                articleCountsDao.incrementLike(articleId)
         }
     }
 
-    override suspend fun sendMessage(articleId: String, comment: String, answerToMessageId: String?) {
+    override suspend fun addBookmark(articleId: String) {
+        if (preferences.accessToken.isEmpty()) {
+            articlePersonalDao.addBookmarkOrInsert(articleId)
+            return
+        }
+        try {
+            network.addBookmark(articleId, preferences.accessToken)
+            articlePersonalDao.addBookmarkOrInsert(articleId)
+        } catch (e: NoNetworkError) {
+            articlePersonalDao.addBookmarkOrInsert(articleId)
+        }
+    }
+
+    override suspend fun removeBookmark(articleId: String) {
+        if (preferences.accessToken.isEmpty()) {
+            articlePersonalDao.removeBookmarkOrInsert(articleId)
+            return
+        }
+        try {
+            network.removeBookmark(articleId, preferences.accessToken)
+            articlePersonalDao.removeBookmarkOrInsert(articleId)
+        } catch (e: NoNetworkError) {
+            articlePersonalDao.addBookmarkOrInsert(articleId)
+        }
+    }
+
+    override suspend fun sendMessage(articleId: String, message: String, answerToMessageId: String?) {
         val (_, messageCount) = network.sendMessage(
-            articleId, MessageReq(comment, answerToMessageId), preferences.accessToken)
+            articleId, MessageReq(message, answerToMessageId), preferences.accessToken)
         articleCountsDao.updateCommentsCount(articleId, messageCount)
     }
 
     suspend fun refreshCommentsCount(articleId: String) {
-//        val counts = network.loadArticleCounts(articleId)
-//        articleCountsDao.updateCommentsCount(articleId, counts.comments)
+        val counts = network.loadArticleCounts(articleId)
+        articleCountsDao.updateCommentsCount(articleId, counts.comments)
     }
 }
 

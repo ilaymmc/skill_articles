@@ -23,5 +23,5 @@ data class ArticleCounts(
     @ColumnInfo(name = "read_duration")
     val readDuration: Int = 0,
     @ColumnInfo(name = "updated_at")
-    val undatedAt: Date = Date()
+    val updatedAt: Date = Date()
 )

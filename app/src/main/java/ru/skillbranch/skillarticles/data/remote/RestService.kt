@@ -29,7 +29,7 @@ interface RestService {
     ): Call<List<CommentRes>>
 
     // https://skill-articles.skill-branch.ru/api/v1/articles/{article_id}/messages
-    @PUT("articles/{article}/messages")
+    @POST("articles/{article}/messages")
     suspend fun sendMessage(
         @Path("article" ) articleId: String,
         @Body message: MessageReq,
@@ -52,4 +52,20 @@ interface RestService {
         @Header("Authorization") token: String
     ): LikeRes
 
+    @POST("articles/{article}/addBookmark")
+    suspend fun addBookmark(
+        @Path("article" ) articleId: String,
+        @Header("Authorization") token: String
+    ): BookmarkRes
+
+    @POST("articles/{article}/removeBookmark")
+    suspend fun removeBookmark(
+        @Path("article" ) articleId: String,
+        @Header("Authorization") token: String
+    ): BookmarkRes
+
+    @GET("articles/{article}/counts")
+    suspend fun loadArticleCounts(
+        @Path("article") articleId: String
+    ): ArticleCountsRes
 }

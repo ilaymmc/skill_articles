@@ -68,4 +68,7 @@ interface ArticleCountsDao : BaseDao<ArticleCounts> {
         WHERE article_id = :articleId
     """)
     fun updateLike(articleId: String, likeCount: Int)
+
+    @Query("SELECT * FROM article_counts WHERE article_id = :articleId")
+    suspend fun findArticlesCountsTest(articleId:String) : ArticleCounts
 }

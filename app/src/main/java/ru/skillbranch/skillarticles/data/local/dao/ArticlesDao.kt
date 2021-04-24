@@ -82,4 +82,7 @@ interface ArticlesDao : BaseDao<Article> {
     """
     )
     fun findLastArticleId(): String?
+
+    @Query("SELECT * FROM articles")
+    suspend fun findArticlesTest(): List<Article>
 }

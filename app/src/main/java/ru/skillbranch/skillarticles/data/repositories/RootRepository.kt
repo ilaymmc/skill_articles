@@ -11,9 +11,9 @@ object RootRepository {
     private val network = NetworkManager.api
     fun isAuth() : LiveData<Boolean> = preferences.isAuthLive
 
-    fun setAuth(auth: Boolean)  {
-        preferences.isAuth = auth
-    }
+//    fun setAuth(auth: Boolean)  {
+//        preferences.isAuth = auth
+//    }
 
     suspend fun login(login: String, pass: String) {
         val auth = network.login(LoginReq(login, pass))
