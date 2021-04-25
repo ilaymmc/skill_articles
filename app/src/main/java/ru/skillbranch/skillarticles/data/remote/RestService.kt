@@ -4,6 +4,7 @@ import retrofit2.Call
 import retrofit2.http.*
 import ru.skillbranch.skillarticles.data.remote.req.LoginReq
 import ru.skillbranch.skillarticles.data.remote.req.MessageReq
+import ru.skillbranch.skillarticles.data.remote.req.RefreshReq
 import ru.skillbranch.skillarticles.data.remote.res.*
 
 interface RestService {
@@ -36,10 +37,6 @@ interface RestService {
         @Header("Authorization") token: String
     ): MessageRes
 
-    // https://skill-articles.skill-branch.ru/api/v1/auth/login
-    @POST("auth/login")
-    suspend fun login(@Body loginReq: LoginReq) : AuthRes
-
     @POST("articles/{article}/decrementLikes")
     suspend fun decrementLike(
         @Path("article" ) articleId: String,
@@ -69,8 +66,11 @@ interface RestService {
         @Path("article") articleId: String
     ): ArticleCountsRes
 
+    // https://skill-articles.skill-branch.ru/api/v1/auth/login
+    @POST("auth/login")
+    suspend fun login(@Body loginReq: LoginReq) : AuthRes
+
     // https://skill-articles.skill-branch.ru/api/v1/auth/refresh
     @POST("auth/refresh")
-    suspend fun refresh(@Body loginReq: LoginReq) : AuthRes
-
+    suspend fun refresh(@Body refreshReq: RefreshReq) : RefreshRes
 }
