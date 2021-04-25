@@ -1,6 +1,5 @@
 package ru.skillbranch.skillarticles.data.repositories
 
-import android.accounts.NetworkErrorException
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.ItemKeyedDataSource
@@ -49,12 +48,12 @@ object ArticleRepository : IArticleRepository {
     fun setupTestDao (
         articlesDao : ArticlesDao? = null,
         articleCountsDao: ArticleCountsDao? = null,
-        articleContentDao: ArticleContentsDao? = null,
+        articlesContentDao: ArticleContentsDao? = null,
         articlePersonalDao: ArticlePersonalInfosDao? = null
     ) {
         articlesDao?.let { this.articlesDao = it }
         articleCountsDao?.let { this.articleCountsDao = it }
-        articleContentDao?.let { this.articleContentsDao = it }
+        articlesContentDao?.let { this.articleContentsDao = it }
         articlePersonalDao?.let { this.articlePersonalDao = it }
     }
     override fun findArticle(articleId: String): LiveData<ArticleFull> {
