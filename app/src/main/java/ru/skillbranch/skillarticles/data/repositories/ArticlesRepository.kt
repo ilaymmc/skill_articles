@@ -43,14 +43,14 @@ object ArticlesRepository : IArticlesRepository {
         categoriesDao: CategoriesDao? = null,
         tagsDao: TagsDao? = null,
         articlePersonalDao: ArticlePersonalInfosDao? = null,
-        articleContentsDao: ArticleContentsDao? = null
+        articlesContentDao: ArticleContentsDao? = null
     ) {
         articlesDao?.let { this.articlesDao = it }
         articleCountsDao?.let { this.articleCountsDao = it }
         categoriesDao?.let { this.categoriesDao = it }
         tagsDao?.let { this.tagsDao = it }
         articlePersonalDao?.let { this.articlePersonalDao = it }
-        articleContentsDao?.let { this.articleContentsDao = it }
+        articlesContentDao?.let { this.articleContentsDao = it }
     }
     override suspend fun loadArticlesFromNetwork(start: String?, size: Int): Int = withContext(Dispatchers.IO) {
         val items = network.articles(start, size)

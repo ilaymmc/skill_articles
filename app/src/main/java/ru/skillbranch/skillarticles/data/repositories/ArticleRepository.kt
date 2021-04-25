@@ -48,12 +48,12 @@ object ArticleRepository : IArticleRepository {
     fun setupTestDao (
         articlesDao : ArticlesDao? = null,
         articleCountsDao: ArticleCountsDao? = null,
-        articlesContentDao: ArticleContentsDao? = null,
+        articleContentDao: ArticleContentsDao? = null,
         articlePersonalDao: ArticlePersonalInfosDao? = null
     ) {
         articlesDao?.let { this.articlesDao = it }
         articleCountsDao?.let { this.articleCountsDao = it }
-        articlesContentDao?.let { this.articleContentsDao = it }
+        articleContentDao?.let { this.articleContentsDao = it }
         articlePersonalDao?.let { this.articlePersonalDao = it }
     }
     override fun findArticle(articleId: String): LiveData<ArticleFull> {
