@@ -68,4 +68,9 @@ interface RestService {
     suspend fun loadArticleCounts(
         @Path("article") articleId: String
     ): ArticleCountsRes
+
+    // https://skill-articles.skill-branch.ru/api/v1/auth/refresh
+    @POST("auth/refresh")
+    suspend fun refresh(@Body loginReq: LoginReq) : AuthRes
+
 }
